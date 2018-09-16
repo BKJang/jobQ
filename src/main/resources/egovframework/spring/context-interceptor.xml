@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+<!-- 로그인 이후 메뉴는 uerInterceptor에서 판단 -->
+<mvc:interceptors>
+	<mvc:interceptor>
+		<mvc:mapping path="/**/person*.jobq" />
+		<mvc:mapping path="/**/goQnAList.jobq" />
+		<mvc:mapping path="/**/QnADetail.jobq" />
+		<mvc:mapping path="/**/companyOffer.jobq" />
+		<mvc:mapping path="/**/initCompanyMain.jobq" />
+		<mvc:mapping path="/**/companyApplicants.jobq" />
+		<mvc:mapping path="/**/changeSelectMenu.jobq" />
+		<mvc:mapping path="/**/companyJob.jobq" />
+		<mvc:mapping path="/**/companyMain.jobq" />
+		<mvc:mapping path="/**/companyJobmanage.jobq" />
+		<mvc:mapping path="/**/resumeDetail.jobq" />
+		
+		<bean class="egovframework.example.cmmn.web.LoginInterceptor" />
+	</mvc:interceptor>
+</mvc:interceptors>
+</beans>

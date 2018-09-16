@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.login.join.service.impl.JoinMapper">
+
+	<insert id="insertPMember" parameterType="string">
+
+		INSERT ALL
+		
+			INTO J_MEMBER (
+			
+				TYPE, 
+				ID, 
+				PASSWORD,
+				NAME, 
+				PHONE, 
+				EMAIL, 
+				HOMEPAGE,
+				BIRTH,
+				SEX)
+				
+				VALUES (
+				'p', 
+				#{member_id}, 
+				#{member_password}, 
+				#{member_name}, 
+				#{member_phone}, 
+				#{member_email},
+				#{member_homepage, jdbcType=VARCHAR},
+				#{member_birth, jdbcType=DATE},
+				#{member_sex}
+				)
+				
+			INTO J_RESUME (
+			
+				RE_NUMBER,
+				ID	)
+				
+				VALUES (
+					seq_j_resume.NEXTVAL,
+					#{member_id}
+					
+				)
+				
+			SELECT * FROM DUAL
+
+	</insert>
+	
+	
+	
+	<insert id="insertCMember" parameterType="string">
+			
+		INSERT ALL
+			
+			INTO J_MEMBER(			
+				TYPE, 
+				ID, 
+				PASSWORD,
+				NAME, 
+				PHONE, 
+				EMAIL,
+				HOMEPAGE,
+				BIRTH,
+				SEX
+				
+				)
+				
+				VALUES (
+				'c', 
+				#{member_id}, 
+				#{member_password}, 
+				#{member_name}, 
+				#{member_phone}, 
+				#{member_email},
+				#{member_homepage, jdbcType=VARCHAR},
+				#{member_birth, jdbcType=DATE},
+				#{member_sex}
+				)				
+
+			INTO J_CORP_INFO (			
+				ID,
+				COMPANY,
+				BOSS,
+				NUMBER_CORP,
+				TYPE,
+				BIRTH,
+				MEMBER,
+				EXPLAIN,
+				ADDRESS_1,
+				ADDRESS_2,
+				ADDRESS_3,
+				HOMEPAGE,
+				AREA
+				
+				)
+				
+				VALUES (
+				#{member_id}, 
+				#{member_companyName}, 
+				#{member_boss}, 
+				#{member_numCompany}, 
+				#{member_typeCompany}, 
+				#{member_birthCompany, jdbcType=DATE}, 
+				#{member_totalNumCompany}, 
+				#{member_explainCompany}, 
+				#{postNum}, 
+				#{full_address},
+				#{address3},				
+				#{member_homepage, jdbcType=VARCHAR},
+				#{chooseAdd1}
+				)
+				
+								
+			SELECT * FROM DUAL
+				
+				
+	</insert>
+	
+
+	<select id="overlapTest" resultType="String" parameterType="String">
+
+			SELECT COUNT(ID)
+			
+			FROM J_MEMBER
+			
+			WHERE ID = #{member_id}
+
+	</select>
+	
+	<select id = "selectEditPerson" parameterType="Map" resultType="egovMap">
+      SELECT 		
+
+		ID "id",
+		PASSWORD "password",
+		NAME "name",
+		PHONE "phone",
+		EMAIL "email",
+		BIRTH "birth",
+		SEX "sex",
+		HOMEPAGE "homepage"
+
+		FROM J_MEMBER
+
+		WHERE 1=1
+		AND ID = #{member_id}
+      			
+   </select>
+   
+   <update id="updatePerson" parameterType="Map">
+   		UPDATE J_MEMBER
+   		SET			
+				NAME = #{member_name},
+				PHONE = #{member_phone},
+				EMAIL = #{member_email},
+				HOMEPAGE = #{member_homepage, jdbcType=VARCHAR},
+				BIRTH = #{member_birth, jdbcType=DATE},
+				SEX = #{member_sex},
+				DATE_MODI = SYSDATE
+				
+   		WHERE 1=1
+		AND ID = #{member_id}
+      			
+   
+   </update>
+   
+   
+   <select id = "selectEditCompany" parameterType="Map" resultType="egovMap">
+      SELECT 		
+
+		M.ID "id",
+		M.PASSWORD "password",
+		M.NAME "name",
+		M.PHONE "phone",
+		M.EMAIL "email",
+		M.BIRTH "birth",
+		M.SEX "sex",
+		M.HOMEPAGE "homepage",
+		
+		C.COMPANY "companyName",
+		C.BOSS "boss",
+		C.NUMBER_CORP "numCompany",
+		C.TYPE "typeCompany",
+		C.BIRTH "birthCompany",
+		C.MEMBER "totalNumCompany",
+		C.EXPLAIN "explainCompany",
+		C.ADDRESS_1 "address1",
+		C.ADDRESS_2 "address2",
+		C.ADDRESS_3 "address3",
+		C.AREA "area"
+		
+
+		FROM J_MEMBER M, J_CORP_INFO C
+
+		WHERE 1=1
+		AND M.ID = #{member_id}
+		AND C.ID = #{member_id}
+      			
+   </select>
+   
+   <update id="updateCompany" parameterType="Map">
+   
+
+
+   		UPDATE J_CORP_INFO 
+
+   		SET			
+
+				
+				COMPANY = #{member_companyName},
+				BOSS = #{member_boss},
+				NUMBER_CORP = #{member_numCompany},
+				TYPE = #{member_typeCompany},
+				BIRTH = #{member_birthCompany},
+				MEMBER = #{member_totalNumCompany},
+				EXPLAIN = #{member_explainCompany},
+				ADDRESS_1 = #{postNum},
+				ADDRESS_2 = #{full_address},
+				ADDRESS_3 = #{address3},
+				HOMEPAGE = #{member_homepage},
+				AREA = #{chooseAdd1}
+				
+				
+				
+   		WHERE 1=1
+
+		AND ID = #{member_id}
+      			
+   
+   </update>
+   
+   <update id="update2Company" parameterType="Map">
+   
+		UPDATE J_MEMBER
+		
+   		SET			
+				NAME = #{member_name},
+				PHONE = #{member_phone},
+				EMAIL = #{member_email},
+				HOMEPAGE = #{member_homepage, jdbcType=VARCHAR},
+				BIRTH = #{member_birth, jdbcType=DATE},
+				SEX = #{member_sex},
+				DATE_MODI = SYSDATE
+				
+   		WHERE 1=1
+		AND ID = #{member_id}
+      			
+   
+   </update>
+   
+	
+
+</mapper>

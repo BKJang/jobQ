@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.mainsetting.dao.MainAnnouncementMapper">
+	
+	<resultMap type="announcementVO" id="mainAnnouncement">
+		<id property="no" column="job_number" />
+		<result property="state" column="class" />
+		<result property="companyName" column="name_wp" />
+		<result property="regDate" javaType="java.sql.Timestamp" column="date_regi" />
+		<result property="updateDate" javaType="java.sql.Timestamp" column="date_modi" />
+	</resultMap>
+
+	<!-- Oracle rownum은 테이블에 이름을 명시해도 안먹히는거 같다.(Ex. sub.rownum등) 대신 별명을 만들어서 사용해야 한다. -->
+	<!-- Oracle rownum의 생성시점 : select구문후 -->
+	<!-- 메인 공고 페이징 처리 -->
+	<select id="getList" parameterType="hashMap" resultMap="mainAnnouncement">
+		SELECT 
+			sup.job_number, 
+			sup.id, 
+			sup.title, 
+			sup.class, 
+			sup.date_regi, 
+			sup.date_modi, 
+			sup.name_wp
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.job_number, 
+					sub.id, 
+					sub.title, 
+					sub.class, 
+					sub.date_regi, 
+					sub.date_modi, 
+					sub.name_wp
+				FROM (
+					    SELECT 
+					    	job_number, 
+					    	id, 
+					    	title, 
+					    	job_class class, 
+					    	date_regi, 
+					    	date_modi, 
+					    	name_wp
+					    FROM 
+					    	j_job
+					    WHERE
+					    	state = '0'
+					    ORDER BY job_number DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<!-- 공고 전체 개수 -->
+	<select id="countAllList" resultType="int">
+		SELECT COUNT(*) FROM j_job WHERE job_number > 0 AND state = '0'
+	</select>
+	
+	<!-- 메인 공고 검색 -->
+	<select id="searchAnnouncements" parameterType="hashMap" resultMap="mainAnnouncement">
+		SELECT 
+			sup.job_number, 
+			sup.id, 
+			sup.title, 
+			sup.class, 
+			sup.date_regi, 
+			sup.date_modi, 
+			sup.name_wp
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.job_number, 
+					sub.id, 
+					sub.title, 
+					sub.class, 
+					sub.date_regi, 
+					sub.date_modi, 
+					sub.name_wp
+				FROM (
+					SELECT 
+						job_number, 
+						id, 
+						title, 
+						job_class class, 
+						date_regi, 
+						date_modi, 
+						name_wp
+					FROM 
+						j_job
+					  <trim prefix="WHERE" suffixOverrides="AND">
+						<if test="id != null">
+							id LIKE '%' || #{id} || '%' AND
+						</if>
+						
+						<if test="companyName != null">
+							name_wp LIKE '%' || #{companyName} || '%' AND
+						</if>
+			
+						<if test="notice_state != null">
+							( job_class IN
+								<foreach item="searchInfo" collection="notice_state" open="(" separator="," close=")">
+									#{searchInfo}
+								</foreach>
+						) </if>
+					</trim>
+					AND 
+						state = '0'	
+					ORDER BY job_number DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>	
+	
+	<!-- 검색된 공고 개수 -->
+	<select id="countSearchedAnnouncements" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*)
+		FROM j_job
+		<trim prefix="WHERE" suffixOverrides="AND || OR">
+			<if test="id != null">
+				id LIKE '%' || #{id} || '%' AND
+			</if>
+			
+			<if test="companyName != null">
+				name_wp LIKE '%' || #{companyName} || '%' AND
+			</if>
+			
+			<if test="notice_state != null">
+				( job_class IN
+					<foreach item="searchInfo" collection="notice_state" open="(" separator="," close=")">
+						#{searchInfo}
+					</foreach>
+			) </if>
+		</trim>
+		AND
+			state = '0'
+	</select>
+	
+	<!-- 메인 공고 삭제 -->
+	<update parameterType="list" id="deleteAnnouncements">
+		UPDATE j_job  
+		SET state = '1'  
+		<trim prefix="WHERE">
+			job_number IN
+				<foreach item="no" collection="list" open="(" separator="," close=")" >
+					#{no}
+				</foreach>
+		</trim>
+	</update>
+	
+	<update id="updateAnnouncements" parameterType="hashMap">
+		UPDATE j_job 
+		SET job_class = #{state} 
+		<trim prefix="WHERE">
+			job_number IN
+			<foreach item="updateNo" index="index" collection="updateList" open="(" separator="," close=")">
+				#{updateNo}
+			</foreach>
+		</trim>
+	</update>
+	
+</mapper>

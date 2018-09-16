@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.company.offer.service.impl.CompanyOfferMapper">
+
+	<insert id ="insertOfferList" parameterType="Map">
+	      INSERT INTO  J_OFFER(O_DATE, RE_NUMBER, CONTENT, C_ID, OFFER_ID)
+	      VALUES(
+	      		systimestamp,
+	      		#{resumeNumber},
+	      		#{offerContent, jdbcType=VARCHAR},
+	      		#{id},
+	      		offer_seq.NEXTVAL
+	      		)
+	</insert>
+	
+	
+		
+	<!-- 면접제의 사람 정보 가져오기 -->
+	<select id ="selectOfferList" parameterType="Map" resultType="egovMap">
+		<!-- 경력을 추가해야함  -->
+		SELECT a.*
+		FROM (SELECT ROWNUM rnum, r.MAINPIC, r.SKILL, sysdate, o.RE_NUMBER, TO_DATE(TO_CHAR(o.O_DATE, 'YYYY-MM-DD')) offerDate, o.OFFER_ID, o.CONTENT, r.TITLE,  r.CONTENT rcontent, m.NAME, m.SEX, m.BIRTH
+				FROM J_OFFER o, J_RESUME r, J_MEMBER m
+				WHERE 1=1
+				AND o.C_ID = #{id}
+				AND o.RE_NUMBER = r.RE_NUMBER
+				AND r.ID = m.ID
+				ORDER BY o.O_DATE DESC) a
+		WHERE 1=1
+		<![CDATA[AND a.rnum >= #{row} AND ROWNUM <= #{pageSize}]]> 
+	     
+	</select>
+   
+  	<!-- 면접제의 갯수 가져오기 -->
+	<select id ="companyOfferMapper" parameterType="String" resultType="int">
+		<!-- 취소 여부를 할것인지  -->
+		SELECT count(*)
+		FROM J_OFFER o
+		WHERE 1=1
+		AND o.C_ID = #{id}
+	     
+	</select>
+   
+   
+   <!-- 면접제의 커리어 가져오기 -->
+	<select id ="selectCarrerList" parameterType="String" resultType="egovMap">
+	
+		SELECT c.RE_NUMBER, c.DATE_ENTER startDate, c.DATE_FINISH finishDate
+		FROM J_RESUME_CAREER c, J_OFFER o
+		WHERE 1=1
+		<if test="_parameter != 0">
+			AND AND o.C_ID = #{_parameter}
+		</if>
+		AND o.RE_NUMBER = c.RE_NUMBER
+	     
+	</select>
+</mapper>

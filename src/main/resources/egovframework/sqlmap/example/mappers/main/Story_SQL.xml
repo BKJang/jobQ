@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.main.jobstory.service.impl.StoryMapper">
+
+	<select id="selectType"  parameterType="String" resultType="String">
+      SELECT ID
+      FROM J_JOB j
+      WHERE 1=1 
+      AND j.JOB_NUMBER = #{_parameter}
+	</select>
+
+	
+
+	<select id="selectStoryDetail" parameterType="Map" resultType="egovMap">
+		SELECT
+		S.NUM "number",
+		S.ID "id",
+		S.TITLE "title",
+		S.CONTENT "content",
+		S.IMAGE "image",
+		(SELECT TO_CHAR(S.DATE_REGI, 'MM/DD - HH12:MI ')  FROM DUAL) "date",
+		S.STATE "state",
+		S.HITS "hits",
+		(SELECT COUNT(*)
+		FROM J_STORY_COMMENT C WHERE C.NUM_STORY=S.NUM AND C.STATE = 'Y') "commentsCNT"
+
+		FROM J_STORY "S"
+
+		WHERE 1=1
+		AND S.NUM = #{storyNum}
+
+	</select>
+
+	<select id="selectStoryDetailComment" parameterType="Map" resultType="egovMap">
+		SELECT
+		S.NUM "number",
+		C.ID "id",
+		C.NUM "numberComment",
+		C.CONTENT "content",
+		(SELECT TO_CHAR(C.DATE_REGI, 'MM/DD - HH12:MI ')  FROM DUAL) "date",
+		S.STATE "state"
+
+		FROM J_STORY "S", J_STORY_COMMENT "C"
+
+		WHERE 1=1
+		AND C.NUM_STORY = #{storyNum}
+    	AND S.NUM = #{storyNum}
+    	AND C.STATE = 'Y'
+
+	</select>
+	
+	<insert id = "storyInsert" parameterType="Map">
+		<selectKey order="AFTER" resultType="string" keyProperty="storyNum">
+			SELECT seq_j_story.currval FROM DUAL
+		</selectKey>
+      INSERT INTO J_STORY (
+      			NUM,
+      			ID, 
+      			TITLE, 
+      			CONTENT,
+      			DATE_REGI,
+      			STATE)
+      			
+      		VALUES (
+      			seq_j_story.NEXTVAL,
+      			#{id},
+      			#{title}, 
+      			#{contents},
+      			SYSDATE,
+      			'Y')
+      			
+	
+   </insert>
+   
+   <insert id = "storyCommentInsert" parameterType="Map">
+      INSERT INTO J_STORY_COMMENT (
+      			NUM,
+      			NUM_STORY,
+      			ID, 
+      			CONTENT,
+      			DATE_REGI,
+      			STATE)
+      			
+      		VALUES (
+      			seq_j_story_comment.NEXTVAL,      			
+      			#{storyNum},
+      			#{id},
+      			#{contentComment},
+      			SYSDATE,
+      			'Y')
+	
+   </insert>
+   
+   <update id="storyDelete"  parameterType="Map">
+   			UPDATE J_STORY
+   			SET STATE = 'N'
+   			WHERE NUM = #{storyNum}
+
+   </update>
+   
+   
+   <update id="storyCommentDelete"  parameterType="Map">
+   			UPDATE J_STORY_COMMENT
+   			SET STATE = 'N'
+   			WHERE NUM = #{storyCommentNum}
+
+   </update>
+   
+   
+   	<update id="updateStoryHits" parameterType="String">
+		UPDATE J_STORY
+		SET HITS = HITS+1
+		WHERE NUM = #{storyNum}
+	</update>
+	
+	
+	<select id = "selectStory" parameterType="Map" resultType="egovMap">
+      SELECT 		
+      	S.NUM "number",
+		S.ID "id",
+		S.TITLE "title",
+		S.CONTENT "content",
+		S.IMAGE "image",
+		S.DATE_REGI
+		"date",
+		S.DATE_MODI "dateModi",
+		S.STATE "state",
+		S.HITS "hits"
+
+		FROM J_STORY "S"
+
+		WHERE 1=1
+		AND S.NUM = #{storyNum}
+      			
+   </select>
+   
+   <update id="updateStory" parameterType="Map">
+   		UPDATE J_STORY
+   		SET
+   			TITLE=#{title},
+   			CONTENT=#{contents},
+   			DATE_MODI=SYSDATE
+   		WHERE NUM = #{storyNum}
+   
+   </update>
+   
+   	<update id="storyPic" parameterType="Map">
+   		UPDATE J_STORY
+   		SET
+   			IMAGE=#{storyImagePath}
+
+   		WHERE NUM = #{storyNum}
+   
+   </update>
+   
+   
+   
+   
+	<select id="selectPagingList" parameterType="storyPagingVO" resultType="egovMap">
+		SELECT 
+			sup.num "number", 
+			sup.id, 
+			sup.title, 
+			sup.content,
+			sup.image, 
+			sup.date_regi "date",  
+			sup.date_modi, 
+			sup.hits,
+			sup.state
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.num, 
+					sub.id, 
+					sub.title, 
+					sub.content,
+					sub.image, 
+					sub.date_regi, 
+					sub.date_modi, 
+					sub.hits,
+					sub.state
+				FROM (
+					    SELECT 
+					    	num, 
+					    	id, 
+					    	title, 
+					    	content,
+					    	image, 
+					    	date_regi, 
+					    	date_modi, 
+					    	hits,
+					    	state
+					    FROM 
+					    	j_story
+					    WHERE
+					    	state = 'Y'	<!-- N이면 삭제를 의미한다. -->
+					    ORDER BY num DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}		
+		
+		<!-- SELECT b.* FROM
+		  (SELECT a.*,
+		        FLOOR( (a.rnum - 1) / #{rows} + 1) pageNumber
+			FROM (
+		SELECT
+		
+		S.NUM "number",
+		S.ID "id",
+		S.TITLE "title",
+		S.CONTENT "content",
+		S.IMAGE "image",
+		(SELECT TO_CHAR(S.DATE_REGI, 'MM/DD - HH12:MI ')  FROM DUAL) "date",
+		S.STATE "state",
+		S.HITS "hits",
+		(SELECT COUNT(*) FROM
+		J_STORY_COMMENT C WHERE C.NUM_STORY=S.NUM AND C.STATE = 'Y') "commentsCNT",
+		ROWNUM rnum
+
+		FROM J_STORY "S"
+		WHERE S.STATE = 'Y' 
+		ORDER BY "number" DESC) a
+		) b
+		
+		WHERE pageNumber = #{page} -->
+		
+		
+	</select>
+	
+	
+	<select id="selectPagingListCnt" parameterType="storyPagingVO" resultType="egovMap">
+		SELECT count(*) TOTAL_TOT_CNT,
+	        CEIL(count(*) / #{rows}) TOTAL_PAGE
+		FROM J_STORY S
+		WHERE
+      		1=1
+      		AND S.STATE = 'Y'
+	</select>
+	
+
+
+
+</mapper>

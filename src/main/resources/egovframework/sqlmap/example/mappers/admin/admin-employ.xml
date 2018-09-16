@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.employ.mapper.AdminEmployMapper">
+	<resultMap id="address" type="addressVO">
+		<result property="zipCode" column="address_wp_1" />
+		<result property="roadAddr" column="address_wp_2" />
+		<result property="detailAddr" column="address_wp_3" />
+	</resultMap>
+	
+	<resultMap id="phone" type="phoneVO">
+		<result property="firstNumber" column="first_number" />
+		<result property="midNumber" column="mid_number" />
+		<result property="lastNumber" column="last_number" />
+	</resultMap>
+	
+	<resultMap id="email" type="emailVO">
+		<result property="emailId" column="email_id" />
+		<result property="emailDomain" column="email_domain" />
+	</resultMap>
+	
+	<resultMap type="adminMemberVO" id="member">
+		<id property="id" column="id" />
+		<result property="name" column="name_cm"/>
+		<result property="sex" column="birth_sex"/>
+		<result property="homepage" column="homepage"/>
+		<result property="birthDate" javaType="java.sql.Date" column="birth_cm"/>
+		
+		<association property="phone" javaType="phoneVO" resultMap="phone"/>
+		<association property="email" javaType="emailVO" resultMap="email"/>
+	</resultMap>
+	
+	<resultMap type="adminEmployVO" id="employ">
+		<result property="no" column="job_number"/>
+		<result property="title" column="title"/>	
+		<result property="imageLogoPath" column="image_logo"/>
+		<result property="companyName" column="name_wp"/>
+		<result property="employType" column="type_employ"/>
+		<result property="career" column="career"/>
+		<result property="academic" column="academic"/>
+		<result property="skills" column="skills"/>
+		<result property="salary" column="salary"/>
+		<result property="content" column="content"/>
+		<result property="employNumber" column="number_employ"/>
+		<result property="regDate" javaType="java.sql.Date" column="date_regi"/>
+		<result property="updateDate" javaType="java.sql.Date" column="date_modi"/>
+		<result property="closeDate" javaType="java.sql.Date" column="date_close"/>
+		<result property="hits" column="hits"/>
+		<result property="closing" column="closing"/>
+		<result property="state" column="state"/>
+		
+		<association property="address" javaType="addressVO" resultMap="address"/>
+		<association property="member" javaType="adminMemberVO" resultMap="member"/>
+	</resultMap>
+	
+	<resultMap type="adminResumeMainDatas" id="mainData">
+		<result property="data" column="data" />
+		<result property="type" column="type" />
+	</resultMap>
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.job_number, 
+			sup.id, 
+			sup.title, 
+			sup.company_name,
+			sup.type_employ,
+			sup.academic,
+			sup.career,
+			sup.date_regi,
+			sup.closing
+		FROM (
+				SELECT 
+					rownum as rnum, 
+					sub.job_number, 
+					sub.id, 
+					sub.title, 
+					sub.company_name,
+					sub.type_employ,
+					sub.academic,
+					sub.career,
+					sub.date_regi,
+					sub.closing
+				FROM (
+						SELECT 
+							job_number, 
+							id, 
+							title, 
+							name_wp company_name,
+							type_employ,
+							academic,
+							career,
+							date_regi,
+							closing
+					 	FROM 
+					 		j_job
+					 	WHERE
+					 		state = '0'
+					 	ORDER BY 
+					 		job_number DESC
+					  ) sub
+				WHERE 
+					rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE 
+			rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countAllList" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			j_job
+		WHERE
+			state = '0'
+	</select>
+	
+	 <select id="getDetail" parameterType="int" resultMap="employ">
+	 	SELECT
+	 		jj.job_number,
+	 		jj.id,
+	 		jj.title,
+	 		jj.image_logo,
+	 		jj.name_wp,
+	 		jj.type_employ,
+	 		jj.career,
+	 		jj.academic,
+	 		jj.salary,
+	 		jj.number_employ,
+	 		jj.date_regi,
+	 		jj.date_modi,
+	 		jj.date_close,
+	 		jj.hits,
+	 		jj.skill_list skills,
+	 		jj.closing,
+	 		jj.state,
+	 		jj.address_wp_1,
+	 		jj.address_wp_2,
+	 		jj.address_wp_3,
+	 		jj.name_cm,
+	 		jj.birth_cm,
+	 	    jj.birth_sex,
+	 	    jjc.content,
+	 	    SUBSTR(phone_cm, 1, INSTR(phone_cm, '-', 1, 1)-1) first_number,
+			SUBSTR(phone_cm, INSTR(phone_cm, '-', 1, 1) + 1, INSTR(phone_cm, '-', 1, 2) - (INSTR(phone_cm, '-', 1, 1) + 1)) mid_number,
+		    SUBSTR(phone_cm, INSTR(phone_cm, '-', 1, 2) + 1) last_number,
+		    SUBSTR(email_cm, 1, INSTR(email_cm, '@') - 1) email_id,
+		    SUBSTR(email_cm, INSTR(email_cm, '@', 1, 1) + 1) email_domain
+	 	FROM 
+	 		j_job jj,
+	 		j_job_content jjc,
+	 		j_job_area jja
+	 	WHERE
+	 		jj.job_number = #{no}
+	 	AND
+	 		jj.job_number = jjc.job_number
+	 	AND
+	 		jj.job_number = jja.job_number
+	 	AND
+	 		state = '0'
+	 </select>
+	 
+	 
+	 <select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.job_number, 
+			sup.id, 
+			sup.title, 
+			sup.company_name,
+			sup.type_employ,
+			sup.academic,
+			sup.career,
+			sup.date_regi,
+			sup.closing
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.job_number, 
+					sub.id, 
+					sub.title, 
+					sub.company_name,
+					sub.type_employ,
+					sub.academic,
+					sub.career,
+					sub.date_regi,
+					sub.closing
+				FROM (
+						SELECT 
+					    	jj.job_number, 
+							jj.id, 
+							jj.title, 
+							jj.name_wp company_name,
+							jj.type_employ,
+							jj.academic,
+							jj.career,
+							jj.date_regi,
+							jj.closing
+					    FROM 
+					    	j_job jj,
+					    	j_job_area jja
+					 	<trim prefix="WHERE" suffixOverrides="AND">
+		
+					 		<if test="coditionKey == 'id'">
+								jj.id LIKE '%' || #{coditionValue} || '%' AND
+							</if>	
+					 	
+							<if test="coditionKey == 'title'">
+								jj.title LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="coditionKey == 'companyName'">
+								jj.name_wp LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="startDate != null and endDate != null">
+								TO_CHAR(jj.date_regi, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(jj.date_regi, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate} AND
+							</if>
+							
+							<if test="areas != null">
+							( 	
+								<trim suffixOverrides="OR">
+								<foreach item="area" collection="areas">
+									jja.area LIKE '%' || #{area} || '%' OR
+								</foreach>
+								</trim>
+							) AND
+							</if>
+							
+							<if test="skills != null">
+							( 
+								<trim suffixOverrides="OR">
+								<foreach item="skill" collection="skills">
+									jj.skill_list LIKE '%' || #{skill} || '%' OR
+								</foreach>
+								</trim>
+							)
+							</if>
+						</trim>
+						AND 
+					    	jj.state = '0'
+					    AND
+					    	jj.job_number = jja.job_number
+					 	ORDER BY job_number DESC
+					  ) sub
+				WHERE 
+					rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE 
+			rnum <![CDATA[>=]]> #{startPage}
+	 </select>
+	
+	
+	 <select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			j_job jj,
+			j_job_area jja
+		<trim prefix="WHERE" suffixOverrides="AND">
+		
+	 		<if test="coditionKey == 'id'">
+				jj.id LIKE '%' || #{coditionValue} || '%' AND
+			</if>	
+	 	
+			<if test="coditionKey == 'title'">
+				jj.title LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="coditionKey == 'companyName'">
+				jj.name_wp LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="startDate != null and endDate != null">
+				TO_CHAR(jj.date_regi, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(jj.date_regi, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate} AND
+			</if>
+			
+			<if test="areas != null">
+			( 
+				<trim suffixOverrides="OR">
+				<foreach item="area" collection="areas">
+					jja.area LIKE '%' || #{area} || '%' OR
+				</foreach>
+				</trim>
+			) AND
+			</if>
+			
+			<if test="skills != null">
+			( 
+				<trim suffixOverrides="OR">
+				<foreach item="skill" collection="skills">
+					jj.skill_list LIKE '%' || #{skill} || '%' OR
+				</foreach>
+				</trim>
+			)
+			</if>
+		</trim>
+		AND 
+	    	jj.state = '0'
+	    AND
+	    	jj.job_number = jja.job_number
+	 </select>
+	 
+	 
+	 <select id="getEmployMainData" resultMap="mainData">
+		SELECT area data, 'area' as type
+		FROM j_area 
+		UNION ALL
+		SELECT skill, 'skill'
+		FROM j_skill
+	</select>
+	
+	<select id="getSkills" resultType="string">
+		SELECT skill FROM j_skill 
+	</select>
+	
+</mapper>

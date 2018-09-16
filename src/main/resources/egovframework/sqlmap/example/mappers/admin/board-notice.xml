@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.board.mapper.AdminNoticeMapper">
+	<!-- <resultMap type="jobStoryReplyVO" id="jobStoryReply">
+		<id property="replyNo" column="reply_no" />
+		<result property="boardNo" column="jobstory_no" />
+		<result property="id" column="reply_id"/>
+		<result property="content" column="reply_content"/>
+		<result property="regDate" javaType="java.sql.Timestamp" column="reply_date_regi"/>
+		<result property="updateDate" javaType="java.sql.Timestamp" column="date_modi"/>
+		<result property="isDelete" javaType="java.lang.Character" column="DELETE"/>
+	</resultMap> -->
+	
+	<resultMap type="adminNoticeVO" id="notice">
+		<id property="no" column="NUMBER" />
+		<result property="id" column="id"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="regDate" javaType="java.sql.Timestamp" column="date_regi"/>
+		<result property="updateDate" javaType="java.sql.Timestamp" column="date_modi"/>
+		<result property="isPublic" column="PUBLIC"/>
+		<result property="boardPage.prev" column="prevNo"/>
+		<result property="boardPage.next" column="nextNo"/>
+	</resultMap>
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup."NUMBER", 
+			sup.id, 
+			sup.title, 
+			sup.content, 
+			sup.date_regi, 
+			sup.date_modi 
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub."NUMBER", 
+					sub.id, 
+					sub.title, 
+					sub.content, 
+					sub.date_regi, 
+					sub.date_modi
+				FROM (
+					    SELECT 
+					    	"NUMBER", 
+					    	id, 
+					    	title, 
+					    	content, 
+					    	date_regi, 
+					    	date_modi 
+					    FROM 
+					    	j_notice
+					    WHERE
+					    	"PUBLIC" = 'Y'
+					    ORDER BY "NUMBER" DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countAllList" resultType="int">
+		SELECT COUNT(*) FROM j_notice WHERE "NUMBER" > 0 AND "PUBLIC" = 'Y'
+	</select>
+	
+	 <select id="getDetail" parameterType="int" resultMap="notice">
+		SELECT
+			n."NUMBER",
+		    n.id,
+		    n.title,
+		    n.content,
+		    n.date_regi,
+		    n.date_modi,
+		    n."PUBLIC",
+		    n.prevNo,
+		    n.nextNo
+		FROM(
+			 SELECT 
+		         "NUMBER",
+		         id,
+		         title,
+		         content,
+		         date_regi,
+		         date_modi,
+		         "PUBLIC",
+		         LAG("NUMBER", 1, 0) OVER(ORDER BY "NUMBER") prevNo, 
+		         LEAD("NUMBER", 1, 0) OVER (ORDER BY "NUMBER") nextNo
+		     FROM j_notice
+				) n
+		WHERE
+		  n."NUMBER" = #{no}
+		AND
+		  "PUBLIC" = 'Y'
+	</select>
+	
+	
+	<select id="getPrevAndNextPage" parameterType="list" resultMap="notice">
+		SELECT
+			j."NUMBER",
+			j.title
+		FROM
+			j_notice j
+		<trim prefix="WHERE">
+			j."NUMBER" IN
+			<foreach item="no" collection="list" open="(" separator="," close=")">
+				#{no}
+			</foreach>
+		</trim>
+		AND
+			"PUBLIC" = 'Y'
+	</select>
+	
+	
+	<insert id="insert" parameterType="hashMap">
+		INSERT INTO J_NOTICE ("NUMBER",id, title, content)
+		VALUES (J_NOTICE_NUMBER_SEQ.NEXTVAL, #{id}, #{title}, #{content})
+	</insert>
+	
+	
+	<delete id="delete" parameterType="list">
+		DELETE FROM j_notice
+		<trim prefix="WHERE">
+			"NUMBER" IN
+			<foreach item="no" collection="list" open="(" separator="," close=")">
+				#{no}
+			</foreach>
+		</trim>
+	</delete>
+	
+	
+	<update id="update" parameterType="hashMap">
+		UPDATE j_notice
+		SET title = #{title}, content = #{content}, date_modi = SYSDATE
+		WHERE "NUMBER" = #{no}
+	</update>
+	
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			main.*
+		FROM (
+			SELECT 
+				rownum rnum, sub.*
+			FROM 
+				(
+					SELECT *
+					FROM 
+						j_notice
+					<trim prefix="WHERE" >
+						<choose>
+							<when test="coditionKey == 'id'">
+								id LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'title'">
+								title LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'content'">
+								content LIKE '%' || #{coditionValue} || '%'
+							</when>
+						</choose>
+					</trim>
+					AND
+						"PUBLIC" = 'Y'
+					ORDER BY date_regi DESC
+				) sub
+			WHERE
+				rownum <![CDATA[<=]]> #{endPage} 
+		) main
+		WHERE
+		  rnum <![CDATA[>=]]> #{startPage}
+		  
+	</select>
+	
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		
+		SELECT
+			COUNT(*)
+		FROM 
+			j_notice
+		<trim prefix="WHERE" >
+			<choose>
+				<when test="coditionKey == 'id'">
+					id LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'title'">
+					title LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'content'">
+					content LIKE '%' || #{coditionValue} || '%'
+				</when>
+			</choose>
+		</trim>
+		AND
+			"PUBLIC" = 'Y'
+			
+	</select>
+	
+	
+</mapper>

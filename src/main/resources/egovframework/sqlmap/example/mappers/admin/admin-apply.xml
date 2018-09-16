@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.applyandoffer.dao.AdminApplyMapper">
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.apply_number, 
+	    	sup.company_name, 
+	    	sup.job_title,
+	    	sup.member_id, 
+	    	sup.member_email,
+	    	sup.is_success,
+	    	sup.date_apply,
+	    	sup.read,
+	    	sup.re_number resume_number
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.apply_number, 
+			    	sub.company_name, 
+			    	sub.job_title,
+			    	sub.member_id, 
+			    	sub.member_email,
+			    	sub.is_success,
+			    	sub.date_apply,
+			    	sub.read,
+			    	sub.re_number
+				FROM (
+					    SELECT 
+						  ja.app_id apply_number,
+						  ja.state is_success,
+						  ja.date_apply,
+						  ja.read,
+						  jj.name_wp company_name,
+						  jj.title job_title,
+						  jm.id member_id,
+						  jm.email member_email,
+						  jr.re_number
+						FROM 
+						  j_apply ja,
+						  j_job jj,
+						  j_resume jr,
+						  j_member jm
+						WHERE 
+						  ja.p_id = jm.id
+						AND 
+						  ja.job_number = jj.job_number
+						AND
+						  ja.p_id = jr.id
+						AND
+						  ja.a_delete = 0
+						AND
+						  ja.cancel = 0
+						AND
+						  jr.re_delete = 'Y'
+					    ORDER BY app_id DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<!-- 이력서 전체 개수 -->
+	<select id="countAllList" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			j_apply ja,
+			j_resume jr 
+		WHERE 
+			ja.a_delete = 0 
+		AND 
+			ja.cancel = 0 
+		AND 
+			jr.re_delete = 'Y'
+	</select>
+
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.apply_number, 
+	    	sup.company_name, 
+	    	sup.job_title,
+	    	sup.member_id, 
+	    	sup.member_email,
+	    	sup.is_success,
+	    	sup.date_apply,
+	    	sup.read,
+	    	sup.re_number resume_number
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.apply_number, 
+			    	sub.company_name, 
+			    	sub.job_title,
+			    	sub.member_id, 
+			    	sub.member_email,
+			    	sub.is_success,
+			    	sub.date_apply,
+			    	sub.read,
+			    	sub.re_number
+				FROM (
+						SELECT 
+						  ja.app_id apply_number,
+						  ja.state is_success,
+						  ja.date_apply,
+						  ja.read,
+						  jj.name_wp company_name,
+						  jj.title job_title,
+						  jm.id member_id,
+						  jm.email member_email,
+						  jr.re_number
+						FROM 
+						  j_apply ja,
+						  j_job jj,
+						  j_resume jr,
+						  j_member jm
+					 	
+					 	<trim prefix="WHERE" suffixOverrides="AND">
+							  ja.p_id = jm.id
+							AND 
+							  ja.job_number = jj.job_number
+							AND
+							  ja.p_id = jr.id	
+							AND
+							  ja.a_delete = 0
+							AND
+							  ja.cancel = 0
+							AND
+							  jr.re_delete = 'Y'
+							AND
+							<if test="coditionKey == 'id'">
+								jr.id LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="coditionKey == 'employTitle'">
+								jj.title LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="coditionKey == 'companyName'">
+								jj.company LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="states != null">
+							( ja.state IN
+								<foreach item="state" collection="states" open="(" separator="," close=")">
+									#{state}
+								</foreach>
+						) </if>
+						</trim>
+					 	ORDER BY 
+					 		ja.app_id DESC
+					  ) sub
+				WHERE 
+					rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE 
+			rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+		  j_apply ja,
+		  j_job jj,
+		  j_resume jr,
+		  j_member jm
+	 	
+	 	<trim prefix="WHERE" suffixOverrides="AND">
+		      ja.p_id = jm.id
+			AND 
+			  ja.job_number = jj.job_number
+			AND
+			  ja.p_id = jr.id	
+			AND
+			  ja.a_delete = 0
+			AND
+			  ja.cancel = 0
+			AND
+			  jr.re_delete = 'Y'
+			AND 
+			<if test="coditionKey == 'id'">
+				jr.id LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="coditionKey == 'employTitle'">
+				jj.title LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="coditionKey == 'companyName'">
+				jj.company LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="states != null">
+			( ja.state IN
+				<foreach item="state" collection="states" open="(" separator="," close=")">
+					#{state}
+				</foreach>
+		) </if>
+		</trim>
+	</select>
+	
+</mapper>

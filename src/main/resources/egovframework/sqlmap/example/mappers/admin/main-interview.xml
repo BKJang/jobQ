@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.mainsetting.dao.MainInterviewMapper">
+	<resultMap type="interviewVO" id="mainInterview">
+		<id property="no" column="interview_no" />
+		<result property="id" javaType="java.lang.String" column="id" />
+		<result property="content" javaType="java.lang.String" column="content" />
+		<result property="regDate" javaType="java.sql.Timestamp" column="reg_date" />
+		<result property="updateDate" javaType="java.sql.Timestamp" column="update_date" />
+		<result property="use" javaType="java.lang.Character" column="use" />
+		
+		<result property="boardPage.prev" javaType="int" column="prevNo" />
+		<result property="boardPage.next" javaType="int" column="nextNo" />
+	</resultMap>
+
+	<select id="getList" parameterType="hashMap" resultMap="mainInterview">
+		SELECT 
+			sup.interview_no, 
+			sup.content,
+			sup.reg_date, 
+			sup.update_date,
+			sup.use
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.interview_no, 
+					sub.content, 
+					sub.reg_date, 
+					sub.update_date,
+					sub.use
+				FROM (
+						SELECT 
+							interview_no, 
+							content, 
+							reg_date, 
+							update_date,
+							use
+					 	FROM 
+					 		j_interview
+					 	ORDER BY 
+					 		interview_no DESC
+					  ) sub
+				WHERE 
+					rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE 
+			rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countAllList" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			j_interview 
+		WHERE 
+			interview_no > 0
+	</select>
+	
+	<delete id="deleteInterviews" parameterType="list">
+		DELETE 
+		FROM 
+			j_interview
+				<trim prefix="WHERE">
+					interview_no IN
+						<foreach item="no" collection="list" open="(" separator="," close=")">
+							#{no}
+						</foreach>
+				</trim>
+	</delete>
+	
+	<select id="selectInterviewDetail" parameterType="int" resultMap="mainInterview">
+		SELECT
+			id, 
+			interview_no, 
+			content, 
+			reg_date, 
+			update_date,
+      		sub.prevNo,
+      		sub.nextNo
+		FROM
+	      (
+	          SELECT
+	          	  id,     
+	              interview_no, 
+	              content, 
+	              reg_date, 
+	              update_date,
+	              LAG(interview_no, 1, 0) OVER(ORDER BY interview_no) prevNo,
+	              LEAD(interview_no, 1, 0) OVER (ORDER BY interview_no) nextNo
+	          FROM
+	              j_interview
+	      ) sub
+   		WHERE 
+    		interview_no = #{no}		
+	</select>
+
+	<select id="selectPrePageAndNextPage" parameterType="hashMap" resultMap="mainInterview">
+		SELECT 
+			CONCAT(SUBSTR(content, 1, 17), '...') content 
+		FROM
+			j_interview
+		WHERE
+			interview_no = #{prePageNo}
+		UNION ALL
+		SELECT 
+			CONCAT(SUBSTR(content, 1, 17), '...') content 
+		FROM
+			j_interview
+		WHERE
+			interview_no = #{nextPageNo} 
+	</select>
+	
+	<select id="searchInterviews" parameterType="hashMap" resultMap="mainInterview">
+		SELECT 
+			sup.interview_no, 
+			SUBSTR(sup.content, 1, 17) || '...' AS "content", 
+			sup.content,
+			sup.reg_date, 
+			sup.update_date,
+			sup.use
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.interview_no, 
+					sub.content, 
+					sub.reg_date, 
+					sub.update_date,
+					sub.use
+				FROM (
+						SELECT 
+							interview_no, 
+							content, 
+							reg_date, 
+							update_date,
+							use
+					 	FROM 
+					 		j_interview
+					 	<trim prefix="WHERE" suffixOverrides="AND">
+							<if test="coditionValue != null">
+								content LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="startDate != null and endDate != null">
+								(TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate}) AND
+							</if>
+							
+							<if test="interview_use != null">
+							( use IN
+								<foreach item="use" collection="interview_use" open="(" separator="," close=")">
+									#{use}
+								</foreach>
+						) </if>
+						</trim>
+					 	ORDER BY 
+					 		interview_no DESC
+					  ) sub
+				WHERE 
+					rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE 
+			rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countSearchedInterviews" parameterType="hashMap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			j_interview 
+		<trim prefix="WHERE" suffixOverrides="AND">
+			<if test="coditionValue != null">
+				content LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="startDate != null and endDate != null">
+				( TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate} ) AND
+			</if>
+			
+			<if test="interview_use != null">
+				( use IN
+					<foreach item="use" collection="interview_use" open="(" separator="," close=")">
+						#{use}
+					</foreach>
+			) </if>
+		</trim>
+	</select>
+	
+	<insert id="add" parameterType="hashMap">
+		INSERT INTO j_interview (interview_no, id, content, update_date)
+		VALUES (j_interview_number_seq.nextval, #{id}, #{content}, null)
+	</insert>
+	
+	<select id="selectUpdatePageInfo" parameterType="int" resultType="egovMap">
+		SELECT
+			id, 
+			interview_no, 
+			content, 
+			reg_date, 
+			update_date
+	    FROM
+	        j_interview
+   		WHERE 
+    		interview_no = #{no}
+	</select>
+
+	<update id="update" parameterType="hashMap">
+		UPDATE j_interview
+		SET content = #{content}, update_date = SYSDATE
+		WHERE interview_no = #{no}
+	</update>
+
+</mapper>

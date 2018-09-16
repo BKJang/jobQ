@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.main.mapper.AdminMainMapper">
+	
+	<select id="getSiteState" resultType="hashMap">
+		SELECT jm.all_members, jr.all_resumes, jq.all_qnas, jj.all_employs, nm.new_members
+		FROM 
+		  (SELECT COUNT(*) all_members FROM j_member) jm,
+		  (SELECT COUNT(*) all_resumes FROM j_resume) jr,
+		  (SELECT COUNT(*) all_qnas FROM j_qna) jq,
+		  (SELECT COUNT(*) all_employs FROM j_job) jj,
+		  (SELECT COUNT(*) new_members 
+		   FROM j_member jm
+		   WHERE TO_CHAR(jm.date_join, 'YYYY-MM') = TO_CHAR(SYSDATE , 'YYYY-MM')) nm
+	</select>
+	
+	<select id="getMembers" resultType="hashMap">
+		SELECT sub.id, sub.type, sub.name, sub.regDate
+		FROM (
+			SELECT
+				id,
+				type,
+				name,
+				date_join regDate
+			FROM 
+				j_member
+			WHERE
+				is_active = 'Y'
+			ORDER BY date_join DESC
+		) sub
+		WHERE rownum <![CDATA[<=]]> 5
+	</select>
+	
+	<select id="getEmploys" resultType="hashMap">
+		SELECT sub.id, sub.job_number, sub.companyName, sub.regDate
+		FROM (
+			SELECT
+				job_number,
+				id,
+				name_wp companyName,
+				date_regi regDate
+			FROM 
+				j_job
+			WHERE 
+				state = 0      <!-- 1이면 삭제를 의미 -->
+			ORDER BY job_number DESC
+		) sub
+		WHERE rownum <![CDATA[<=]]> 5
+	</select>
+	
+	<select id="getResumes" resultType="hashMap">
+		SELECT sub.id, sub.re_number, sub.type_employ, sub.regDate
+		FROM (
+			SELECT
+				re_number,
+				id,
+				type_employ,
+				date_regi regDate
+			FROM 
+				j_resume
+			WHERE re_delete = 'Y'
+			ORDER BY re_number DESC
+		) sub
+		WHERE rownum <![CDATA[<=]]> 5
+	</select>
+	
+	<select id="getQnas" resultType="hashMap">
+		SELECT sub.id, sub.qna_number, sub.regDate
+		FROM (
+			SELECT
+				q_number qna_number,
+				id,
+				date_regi regDate
+			FROM 
+				j_qna
+			WHERE
+				state = 'Y'
+			ORDER BY q_number DESC
+		) sub
+		WHERE rownum <![CDATA[<=]]> 5
+	</select>
+	
+	<select id="getBoards" resultType="hashMap">
+		SELECT sub.id, sub.story_number, sub.regDate
+		FROM (
+			SELECT
+				NUM story_number,
+				id,
+				date_regi regDate
+			FROM 
+				j_story
+			WHERE 
+				state = 'Y'
+			ORDER BY NUM DESC
+		) sub
+		WHERE rownum <![CDATA[<=]]> 5
+	</select>
+	
+	<!-- UNION ALL, UNION로 합해진 테이블에 공통적인 제약 조건을 걸려면 밑에 처럼 ORDER BY를 걸거나 아예 감싸준 다음에 걸어야 한다. -->
+	<select id="getApplyAndOffers" resultType="hashMap">
+			  SELECT sup.*
+			  FROM (
+			    SELECT seq, id, regDate, 'apply' AS type	<!-- apply라는 임의의 데이터를 넣는다. 그 컬럼에 별칭을 type이라고 정한다. -->
+			    FROM (										<!-- 'apply'같은 것을 '표현식' 또는 '리터럴 상수'라고 부른다. -->	
+			          SELECT
+			            ja.app_id seq,
+			            jr.id,
+			            ja.date_apply regDate
+			          FROM 
+			            j_apply ja, j_resume jr
+			          WHERE 
+			          	a_delete = 0     <!-- 1이면 삭제된 상태를 의미 -->
+			          AND 
+			          	ja.p_id = jr.id
+			          ORDER BY app_id DESC
+			        ) sub
+			    WHERE rownum <![CDATA[<=]]> 5
+			    UNION ALL
+			    SELECT seq, id, regDate, 'offer'
+			    FROM (
+			          SELECT
+			            offer_id seq,
+			            c_id id,
+			            o_date regDate
+			          FROM 
+			            j_offer
+			          ORDER BY offer_id DESC
+			        ) sub
+			    WHERE rownum <![CDATA[<=]]> 5
+			    ORDER BY regDate DESC 
+			) sup
+			WHERE rownum <![CDATA[<=]]> 5
+	</select>
+	
+	<select id="getEmployDates" resultType="java.sql.Date">
+		SELECT date_regi employ_date FROM j_job WHERE state = 0
+	</select>
+	
+	<select id="getResumeDates" resultType="java.sql.Date">
+		SELECT date_regi resume_date FROM j_resume WHERE RE_DELETE = 'Y'	
+	</select>
+	
+</mapper>

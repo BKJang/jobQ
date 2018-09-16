@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.aboutjobq.notice.service.impl.NoticeMapper">
+	
+	<!-- 공지사항 상세 가져오기 -->
+	<select id ="selectNoticeDetail" resultType="egovMap" parameterType="String">
+      SELECT "NUMBER" n_number,
+					DATE_MODI,
+					TITLE n_title,
+					CONTENT n_content
+				FROM J_NOTICE J
+				WHERE 
+					"NUMBER" = #{noticeNumber}
+   </select>   
+
+	
+	<!-- 공지사항 목록 가져오기 -->
+   
+   <select id="selectNoticeList" parameterType="noticePagingVO" resultType="egovMap">
+		SELECT b.* FROM
+		  (SELECT a.*,
+		        FLOOR( (a.rnum - 1) / #{rows} + 1) pageNumber
+		  FROM (SELECT "NUMBER" n_number,
+					TO_CHAR(DATE_REGI, 'YYYY-MM-DD') n_date_regi,
+					TO_CHAR(DATE_MODI, 'YYYY-MM-DD') n_date_modi,
+					TITLE n_title,
+					ROWNUM rnum
+				FROM J_NOTICE
+				WHERE 
+					"PUBLIC" = 'Y'
+				ORDER BY n_number DESC) a
+		  ) b
+		WHERE pageNumber = #{page}
+		ORDER BY n_number DESC
+	</select>
+	
+	<select id="selectNoticeListCnt" parameterType="noticePagingVO" resultType="egovMap">
+		SELECT count(*) TOTAL_TOT_CNT,
+	        CEIL(count(*) / #{rows}) TOTAL_PAGE
+		FROM J_NOTICE J
+		WHERE
+      		"PUBLIC" = 'Y'
+	</select>
+	
+	
+</mapper>

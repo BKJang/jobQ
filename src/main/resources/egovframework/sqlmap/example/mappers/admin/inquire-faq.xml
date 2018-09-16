@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.inquire.mapper.AdminFaqMapper">
+	<resultMap type="boardPage" id="boardPage">
+		<result property="prev" column="prevNo" />
+		<result property="next" column="nextNo" />
+	</resultMap>
+	
+	<resultMap type="adminFaqVO" id="faq">
+		<id property="no" column="NUMBER" />
+		<result property="subject" column="subject"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="regDate" javaType="java.sql.Timestamp" column="date_regi"/>
+		<result property="updateDate" javaType="java.sql.Timestamp" column="date_modi"/>
+		<result property="isPublic" column="PUBLIC"/>
+		<result property="boardPage.prev" column="prevNo"/>
+		<result property="boardPage.next" column="nextNo"/>
+	</resultMap>
+	
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.num "number", 
+			sup.title, 
+			sup.content,
+			sup.subject, 
+			sup.date_regi, 
+			sup.date_modi, 
+			sup."PUBLIC"
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.num, 
+					sub.title, 
+					sub.content,
+					sub.subject, 
+					sub.date_regi, 
+					sub.date_modi, 
+					sub."PUBLIC"
+				FROM (
+					    SELECT 
+					    	num, 
+					    	title, 
+					    	content,
+					    	subject, 
+					    	date_regi, 
+					    	date_modi, 
+					    	"PUBLIC"
+					    FROM 
+					    	j_faq
+					    ORDER BY num DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<select id="countAllList" resultType="int">
+		SELECT COUNT(*) FROM j_faq WHERE num > 0
+	</select>
+	
+	
+	 <select id="getDetail" parameterType="int" resultMap="faq">
+		SELECT
+			f.num "number",
+		    f.subject,
+		    f.title,
+		    f.content,
+		    f.date_regi,
+		    f.date_modi,
+		    f."PUBLIC",
+		    f.prevNo,
+		    f.nextNo
+		FROM(
+			SELECT 
+		         num,
+		         subject,
+		         title,
+		         content,
+		         date_regi,
+		         date_modi,
+		         "PUBLIC",
+		         LAG(num, 1, 0) OVER(ORDER BY num) prevNo, 
+		         LEAD(num, 1, 0) OVER (ORDER BY num) nextNo
+		    FROM j_faq ) f
+  		WHERE
+    		f.num = #{no}
+	</select>
+	
+	
+	<select id="getPrevAndNextPage" parameterType="list" resultMap="faq">
+		SELECT
+			f.num,
+			f.title
+		FROM
+			j_faq f
+		<trim prefix="WHERE">
+			f.num IN
+			<foreach item="no" collection="list" open="(" separator="," close=")">
+				#{no}
+			</foreach>
+		</trim>
+	</select>
+	
+	
+	<update id="update" parameterType="hashMap">
+		UPDATE j_faq
+		SET subject = #{subject}, title = #{title}, content = #{content}, date_modi = SYSDATE
+		WHERE num = #{no}
+	</update>
+	
+	
+	<insert id="insert" parameterType="jobStoryReplyVO">
+		INSERT INTO J_FAQ (num, subject, title, content)
+		VALUES (J_FAQ_NUMBER_SEQ.NEXTVAL, #{subject}, #{title}, #{content})
+	</insert>
+	
+	
+	<delete id="delete" parameterType="list">
+		DELETE FROM j_faq
+		<trim prefix="WHERE">
+			num IN
+			<foreach item="no" collection="list" open="(" separator="," close=")">
+				#{no}
+			</foreach>
+		</trim>
+	</delete> 
+	
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.num "number", 
+			sup.title, 
+			sup.content,
+			sup.subject, 
+			sup.date_regi, 
+			sup.date_modi, 
+			sup."PUBLIC"
+		FROM (
+			SELECT 
+				rownum rnum,
+				sub.num, 
+				sub.title, 
+				sub.content,
+				sub.subject, 
+				sub.date_regi, 
+				sub.date_modi, 
+				sub."PUBLIC"
+			FROM 
+				(
+					SELECT
+						num, 
+				    	title, 
+				    	content,
+				    	subject, 
+				    	date_regi, 
+				    	date_modi, 
+				    	"PUBLIC"
+					FROM 
+						j_faq
+					<trim prefix="WHERE" >
+						<choose>
+							<when test="coditionKey == 'subject'">
+								subject LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'title'">
+								title LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'content'">
+								content LIKE '%' || #{coditionValue} || '%'
+							</when>
+						</choose>
+					</trim>
+					ORDER BY num DESC
+				) sub
+			WHERE
+				rownum <![CDATA[<=]]> #{endPage} 
+		) sup
+		WHERE
+		  rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM 
+			j_faq
+		<trim prefix="WHERE" >
+			<choose>
+				<when test="coditionKey == 'subject'">
+					subject LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'title'">
+					title LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'content'">
+					content LIKE '%' || #{coditionValue} || '%'
+				</when>
+			</choose>
+		</trim>
+	</select>
+	
+	<select id="getMainData" resultType="int">
+		SELECT COUNT(*) FROM j_faq WHERE "PUBLIC" = 'Y'
+	</select>
+	
+	<update id="updateState" parameterType="map">
+		UPDATE j_faq
+		SET "PUBLIC" = #{state}
+		WHERE num = #{no}
+	</update>
+	
+</mapper>

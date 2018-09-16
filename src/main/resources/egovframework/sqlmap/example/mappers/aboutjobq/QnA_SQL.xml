@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.aboutjobq.qna.service.impl.QnAMapper">
+	
+	<!-- 회원의 문의내역 상세 가져오기 -->
+	<select id ="selectQnADetail" resultType="egovMap" parameterType="String">
+      SELECT  Q.Q_NUMBER q_number,
+      		Q.ID q_id,
+      		Q.TITLE q_title,
+      		Q.CONTENT q_content,
+      		TO_CHAR(Q.DATE_MODI, 'YYYY-MM-DD') q_date_modi,
+      		TO_CHAR(Q.REPLY_DATE, 'YYYY-MM-DD') q_reply_date,
+      		Q.REPLY_CONTENT q_reply_content
+      FROM J_QNA Q
+      WHERE 
+      		Q.Q_NUMBER = #{_parameter}
+   </select>   
+	
+	<!-- 문의 내역 삭제(상태만 변경) -->
+	<update id="deleteQnADetail" parameterType="String">
+		UPDATE J_QNA Q SET
+				Q.STATE = 'N'
+		WHERE Q.Q_NUMBER = #{qnaNumber}
+	</update>
+	
+	<!-- 문의 목록 가져오기 -->
+   
+   <select id="selectPagingList" parameterType="qnaPagingVO" resultType="egovMap">
+		SELECT b.* FROM
+		  (SELECT a.*,
+		        FLOOR( (a.rnum - 1) / #{rows} + 1) pageNumber
+		  FROM (SELECT  Q.Q_NUMBER q_number,
+      			Q.ID q_id,
+      			Q.TITLE q_title,
+      			Q.CONTENT q_content,
+      			TO_CHAR(Q.DATE_REGI, 'YYYY-MM-DD') q_date_regi,
+      			TO_CHAR(Q.DATE_MODI, 'YYYY-MM-DD') q_date_modi,
+      			TO_CHAR(Q.REPLY_DATE, 'YYYY-MM-DD') q_reply_date,
+      			Q.REPLY_CONTENT q_reply_content,
+      			Q.STATE q_state,
+      			ROWNUM rnum
+      		FROM J_QNA Q
+     		WHERE 
+      		Q.ID = #{id}
+      		AND Q.STATE = 'Y'
+      		ORDER BY q_number DESC) a
+		  ) b
+		WHERE pageNumber = #{page}
+		ORDER BY q_number DESC
+	</select>
+	
+	<select id="selectPagingListCnt" parameterType="qnaPagingVO" resultType="egovMap">
+		SELECT count(*) TOTAL_TOT_CNT,
+	        CEIL(count(*) / #{rows}) TOTAL_PAGE
+		FROM J_QNA Q
+		WHERE
+      		Q.ID = #{id}
+      		AND Q.STATE = 'Y'
+	</select>
+	
+	<!-- 문의 등록 -->
+	<insert id="registerQ" parameterType="Map">
+		INSERT INTO J_QNA
+					(Q_NUMBER, 
+					ID, 
+					TITLE, 
+					CONTENT, 
+					DATE_REGI, 
+					DATE_MODI, 
+					STATE)
+			 VALUES (qna_seq.NEXTVAL, 
+			 		#{id}, 
+			 		#{qnaTitle}, 
+			 		#{qnaContent}, 
+			 		sysdate, 
+			 		sysdate, 
+			 		'Y')
+	</insert>
+	
+	<!-- 문의 수정 -->
+	<update id="modifyQ" parameterType="String">
+		UPDATE J_QNA Q SET
+				Q.TITLE = #{qnaTitle},
+				Q.CONTENT = #{qnaContent},
+				Q.DATE_MODI = sysdate
+		WHERE Q.Q_NUMBER = #{qnaNumber}
+	</update>
+</mapper>

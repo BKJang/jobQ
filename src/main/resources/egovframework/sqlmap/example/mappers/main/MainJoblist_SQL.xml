@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.main.joblist.service.impl.MainJoblistMapper">
+	
+	
+  	<select id="ListCount" resultType="int">
+      
+		SELECT  count(*)
+		FROM J_JOB j
+		WHERE 1=1 
+		AND j.CLOSING = '0'
+		<!-- <if test="FCGuBun == 1 or FCGuBun == 0">
+			AND	j.CLOSING = #{FCGuBun}
+		</if> -->
+		
+  	</select>
+	
+	<select id="defaultGonggoList" parameterType="map" resultType="egovMap">
+      	
+			SELECT  *
+			FROM (SELECT ROWNUM AS RNUM, a.*
+					FROM (SELECT j.JOB_NUMBER, j.NAME_WP, j.TITLE, j.DATE_MODI, j.DATE_CLOSE, j.CAREER, j.ACADEMIC, j.HITS, j.CLOSING, a.AREA, C.COMPANY
+							FROM J_JOB j, J_JOB_AREA a, J_CORP_INFO c
+							WHERE 1=1 
+							AND j.JOB_NUMBER = a.JOB_NUMBER
+							AND j.ID = c.ID
+							AND j.CLOSING = '0'
+							<if test="skillList != '' and skillList != null">
+								 AND 
+								 <foreach collection="skillList" item="item" index="index" separator=" OR " open="(" close=")">
+                   					 j.SKILL_LIST like '%' ||  #{item} || '%'
+                   				</foreach>
+						    </if>
+						    
+							<if test="area != null and area != '' and area != '전체'">
+								AND	a.AREA = #{area}
+							</if>
+							ORDER BY j.JOB_NUMBER DESC
+						) a
+				)
+			WHERE RNUM <![CDATA[>=]]>#{row} AND ROWNUM <![CDATA[<=]]>	#{pageSize}
+  	</select>
+  	
+  	<!-- 디비에 있는 스킬 리스트들 -->
+  	<select id ="selectSkillList"  resultType="egovMap">
+      SELECT  *
+      FROM J_SKILL
+      WHERE 1=1
+   </select>
+   
+   <!-- 디비에 있는 지역 리스트들 -->
+  	<select id ="selectLocationList"  resultType="egovMap">
+      SELECT  *
+      FROM J_AREA
+      WHERE 1=1
+   </select>
+   
+   <!-- 지역별 카운트 -->
+   <select id="ListCountDetail" parameterType="Map" resultType="int">
+		SELECT  count(*)
+		FROM J_JOB j, J_JOB_AREA a
+		WHERE 1=1
+		<if test="_parameter != '' and _parameter != null and _parameter != '전체'">
+			AND	a.AREA = #{_parameter}
+		</if>
+		AND j.JOB_NUMBER = a.JOB_NUMBER
+		AND j.CLOSING = '0'
+  	</select>
+  	
+  	<!-- 지역별 카운트 -->
+   <select id="ListCountDetail2" parameterType="Map" resultType="int">
+		SELECT  count(*)
+		FROM J_JOB j, J_JOB_AREA a
+		WHERE 1=1
+		<if test="skillList != '' and skillList != null">
+			 AND 
+			 <foreach collection="skillList" item="item" index="index" separator=" OR " open="(" close=")">
+				 j.SKILL_LIST like '%' ||  #{item} || '%'
+			</foreach>
+	    </if> 
+		<if test="guBun != '' and guBun != null and guBun != '전체'">
+			AND	a.AREA = #{guBun}
+		</if>
+		AND j.JOB_NUMBER = a.JOB_NUMBER
+		AND j.CLOSING = '0'
+  	</select>
+</mapper>

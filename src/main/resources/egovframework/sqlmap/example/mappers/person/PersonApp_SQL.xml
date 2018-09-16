@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.person.application.service.impl.PersonApplicationMapper">
+	
+	<insert id ="insertAppList" parameterType="Map">
+		<selectKey keyProperty="appSeq" resultType="int" order="BEFORE">
+		   select App_seq.nextval FROM DUAL
+		</selectKey>
+	      INSERT INTO  J_APPLY(P_ID, APP_ID, JOB_NUMBER, DATE_APPLY)
+	      VALUES(
+	      		#{id},
+	      		app_seq.NEXTVAL,
+	      		#{gonggoNum},
+	      		sysdate
+	      		)
+	</insert>
+	<!-- 지원현황 가져오기 -->
+	<select id="selectPagingList" parameterType="personApplicationPagingVO" resultType="egovMap">
+		SELECT b.* FROM
+		  (SELECT a.*,
+		        FLOOR( (a.rnum - 1) / #{rows} + 1) pageNumber
+		  FROM (SELECT A.JOB_NUMBER job_number,
+		  	   A.STATE state,
+		  	   A.APP_ID app_id,
+			   C.COMPANY name,
+       		   J.TITLE title,
+       		   TO_CHAR(A.DATE_APPLY, 'YYYY-MM-DD') date_apply,
+               TO_CHAR(J.DATE_CLOSE, 'YYYY-MM-DD') date_close,
+       	 	   J.NUMBER_EMPLOY number_employ,
+       		   A.CANCEL cancel,
+       		   ROWNUM rnum
+       		   
+		  FROM 
+		  	   J_APPLY A,
+     		   J_JOB J,
+     		   J_CORP_INFO C
+		 WHERE 
+   			   A.JOB_NUMBER = J.JOB_NUMBER
+  		   AND A.P_ID = #{id}  
+  	  	   AND J.ID = C.ID
+  	  	   AND A.A_DELETE = 0
+  	  	 ORDER BY cancel, app_id DESC) a
+		  ) b
+		WHERE pageNumber = #{page}
+		ORDER BY b.cancel, b.app_id DESC
+	</select>
+	
+	<select id="selectPagingListCnt" parameterType="personApplicationPagingVO" resultType="egovMap">
+		SELECT count(*) TOTAL_TOT_CNT,
+	        CEIL(count(*) / #{rows}) TOTAL_PAGE
+		FROM J_APPLY A,
+     		 J_JOB J,
+     		 J_CORP_INFO C
+		WHERE  A.JOB_NUMBER = J.JOB_NUMBER
+  		   AND A.P_ID = #{id}  
+  	  	   AND J.ID = C.ID
+  	  	   AND A.A_DELETE = 0
+	</select>
+	
+	<!-- 지원취소 -->
+	<update id="cancelApplication" parameterType="String">
+		UPDATE J_APPLY SET
+			DATE_CANCEL = sysdate,
+			CANCEL = 1
+		WHERE 
+			APP_ID = #{appId}
+	</update>
+	<!-- 지원삭제 -->
+   <update id="deleteApplication" parameterType="String">
+		UPDATE J_APPLY SET
+			DATE_CANCEL = sysdate,
+			CANCEL = 1,
+			A_DELETE = 1
+		WHERE 
+			APP_ID = #{appId}
+	</update>
+</mapper>

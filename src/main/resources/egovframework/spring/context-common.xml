@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:p="http://www.springframework.org/schema/p"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <context:component-scan base-package="egovframework">
+       <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+    
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" />
+    <!-- 쿠키를 이용한 Locale 이용시 <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"/> -->
+    <bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+        <property name="paramName" value="language" />
+    </bean>
+
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="defaultErrorView" value="cmmn/egovError"/>
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.springframework.dao.DataAccessException">cmmn/dataAccessFailure</prop>
+                <prop key="org.springframework.transaction.TransactionException">cmmn/transactionFailure</prop>
+                <prop key="egovframework.rte.fdl.cmmn.exception.EgovBizException">cmmn/egovError</prop>
+                <prop key="org.springframework.security.AccessDeniedException">cmmn/egovError</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="tilesViewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.tiles2.TilesView" />
+        <property name="order" value="1" />
+    </bean>
+
+    <!-- Tiles 2 Configurer -->
+    <bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles2.TilesConfigurer">
+        <property name="definitions" value="/WEB-INF/tiles/*-layout.xml" />
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" 
+       p:order="2"
+       p:viewClass="org.springframework.web.servlet.view.JstlView"
+       p:prefix="/WEB-INF/jsp/egovframework/example/" p:suffix=".jsp"/>
+   
+   <!-- For Pagination Tag -->
+    <bean id="imageRenderer" class="egovframework.example.cmmn.web.EgovImgPaginationRenderer"/>
+
+    <bean id="paginationManager" class="egovframework.rte.ptl.mvc.tags.ui.pagination.DefaultPaginationManager">
+        <property name="rendererType">
+            <map>
+                <entry key="image" value-ref="imageRenderer"/>
+            </map>
+        </property>
+    </bean>
+   <!-- /For Pagination Tag -->
+   
+   <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+      <property name="basenames">
+         <list>
+            <value>classpath:/egovframework/message/message-common</value>
+            <value>classpath:/egovframework/rte/fdl/idgnr/messages/idgnr</value>
+            <value>classpath:/egovframework/rte/fdl/property/messages/properties</value>
+         </list>
+      </property>
+      <property name="cacheSeconds">
+         <value>60</value>
+      </property>
+   </bean>
+   
+   <bean id="leaveaTrace" class="egovframework.rte.fdl.cmmn.trace.LeaveaTrace">
+      <property name="traceHandlerServices">
+         <list>
+            <ref bean="traceHandlerService" />
+         </list>
+      </property>
+   </bean>
+
+   <bean id="traceHandlerService" class="egovframework.rte.fdl.cmmn.trace.manager.DefaultTraceHandleManager">
+      <property name="reqExpMatcher">
+         <ref bean="antPathMater" />
+      </property>
+      <property name="patterns">
+         <list>
+            <value>*</value>
+         </list>
+      </property>
+      <property name="handlers">
+         <list>
+            <ref bean="defaultTraceHandler" />
+         </list>
+      </property>
+   </bean>
+   
+   <bean id="antPathMater" class="org.springframework.util.AntPathMatcher" />
+   <bean id="defaultTraceHandler" class="egovframework.rte.fdl.cmmn.trace.handler.DefaultTraceHandler" />
+   
+   <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+   
+   <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+      <property name="host" value="smtp.gmail.com" />
+      <property name="port" value="587"/>
+      <property name="username" value="dbsdy1235@gmail.com" />
+      <property name="password" value="123123" />
+      <property name="defaultEncoding" value="utf-8" />
+      <property name="javaMailProperties">
+         <props>
+            <prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop>
+            <prop key="mail.smtp.starttls.enable">true</prop>
+            <prop key="mail.smtp.auth">true</prop>
+         </props>
+      </property>
+   </bean>
+   
+   <bean id="jobqJsonUtils" class="egovframework.example.admin.cmmn.utils.JobqJsonUtils" />
+   
+   <bean id="excelExport" class="egovframework.example.admin.etc.excel.ExcelExport" />
+</beans>

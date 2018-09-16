@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.board.mapper.JobStoryMapper">
+	<resultMap type="jobStoryReplyVO" id="jobStoryReply">
+		<id property="replyNo" column="reply_no" />
+		<result property="boardNo" column="jobstory_no" />
+		<result property="id" column="reply_id"/>
+		<result property="content" column="reply_content"/>
+		<result property="regDate" javaType="java.sql.Timestamp" column="reply_date_regi"/>
+		<result property="updateDate" javaType="java.sql.Timestamp" column="date_modi"/>
+		<result property="isDelete" javaType="java.lang.Character" column="DELETE"/>
+	</resultMap>
+	
+	<resultMap type="boardPage" id="boardPage">
+		<result property="prev" column="prevNo" />
+		<result property="next" column="nextNo" />
+	</resultMap>
+	
+	<resultMap type="jobStoryVO" id="jobStory">
+		<id property="no" column="num" />
+		<result property="id" column="id"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="imgPath" column="image" />
+		<result property="regDate" javaType="java.sql.Timestamp" column="date_regi"/>
+		<result property="updateDate" javaType="java.sql.Timestamp" column="date_modi"/>
+		<result property="isDelete" javaType="java.lang.Character" column="DELETE"/>
+		<result property="hits" column="hits"/>
+		<result property="boardPage.prev" column="prevNo"/>
+		<result property="boardPage.next" column="nextNo"/>
+		
+		<collection property="reply" ofType="jobStoryReplyVO" resultMap="jobStoryReply" />
+	</resultMap>
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.num, 
+			sup.id, 
+			sup.title, 
+			sup.content, 
+			sup.date_regi, 
+			sup.date_modi, 
+			sup.hits
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.num, 
+					sub.id, 
+					sub.title, 
+					sub.content, 
+					sub.date_regi, 
+					sub.date_modi, 
+					sub.hits
+				FROM (
+					    SELECT 
+					    	num, 
+					    	id, 
+					    	title, 
+					    	content, 
+					    	date_regi, 
+					    	date_modi, 
+					    	hits
+					    FROM 
+					    	j_story
+					    WHERE
+					    	state = 'Y'	<!-- N이면 삭제를 의미한다. -->
+					    ORDER BY num DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countAllList" resultType="int">
+		SELECT COUNT(*) FROM j_story WHERE NUM > 0 AND state = 'Y'
+	</select>
+	
+	<select id="getDetail" parameterType="int" resultMap="jobStory">
+			SELECT
+				j.num,
+			    j.id,
+			    j.title,
+			    j.content,
+			    j.image,
+			    j.date_regi,
+			    j.date_modi,
+			    j.hits,
+			    j.prevNo,
+			    j.nextNo,
+			    jc.id reply_id,
+			    jc.content reply_content,
+			    jc.date_regi reply_date_regi,
+			    jc.num reply_no,
+			    jc.num_story jobstory_no
+			FROM(
+				SELECT 
+			         num,
+			         id,
+			         title,
+			         content,
+			         image,
+			         date_regi,
+			         date_modi,
+			         hits,
+			         LAG(num, 1, 0) OVER(ORDER BY num) prevNo, 
+			         LEAD(num, 1, 0) OVER (ORDER BY num) nextNo
+			      FROM 
+			      	j_story
+			      WHERE
+				  	state = 'Y' ) j, 
+	          (
+	            SELECT *
+	            FROM j_story_comment
+	            WHERE state = 'Y'
+	          ) jc
+		    WHERE
+	        j.num = #{no}
+	      AND
+	        j.num = jc.num_story(+) 
+	</select>
+	
+	<select id="getPrevAndNextPage" parameterType="list" resultMap="jobStory">
+		SELECT
+			j.num,
+			j.title
+		FROM
+			j_story j
+		<trim prefix="WHERE">
+			j.num IN
+			<foreach item="no" collection="list" open="(" separator="," close=")">
+				#{no}
+			</foreach>
+		</trim>
+	</select>
+	
+	<insert id="insertReply" parameterType="jobStoryReplyVO">
+		INSERT INTO J_STORY_COMMENT (num, num_story, id, content)
+		VALUES (seq_j_story_comment.NEXTVAL, #{boardNo}, #{id}, #{content})
+	</insert>
+	
+	<update id="delete" parameterType="list">
+		UPDATE j_story
+		SET state = 'N' 
+		<trim prefix="WHERE" suffixOverrides="OR">
+			<foreach item="no" collection="list">
+				num = #{no} OR 
+			</foreach>
+		</trim>
+	</update>
+	
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.num, 
+			sup.id, 
+			sup.title, 
+			sup.content, 
+			sup.date_regi, 
+			sup.date_modi, 
+			sup.hits
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.num, 
+					sub.id, 
+					sub.title, 
+					sub.content, 
+					sub.date_regi, 
+					sub.date_modi, 
+					sub.hits
+				FROM (
+						SELECT 
+					    	num, 
+					    	id, 
+					    	title, 
+					    	content, 
+					    	date_regi, 
+					    	date_modi, 
+					    	hits
+					    FROM 
+					    	j_story
+					 	<trim prefix="WHERE" suffixOverrides="AND">
+							
+							<if test="coditionKey == 'id'">
+								id LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="coditionKey == 'title'">
+								title LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="coditionKey == 'content'">
+								content LIKE '%' || #{coditionValue} || '%' AND
+							</if>
+							
+							<if test="startDate != null and endDate != null">
+								TO_CHAR(date_regi, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(date_regi, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate}
+							</if>
+							
+						</trim>
+						AND 
+							state = 'Y'
+					 	ORDER BY num DESC
+					  ) sub
+				WHERE 
+					rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE 
+			rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+	    	j_story
+	 	<trim prefix="WHERE" suffixOverrides="AND">
+			
+			<if test="coditionKey == 'id'">
+				id LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="coditionKey == 'title'">
+				title LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="coditionKey == 'content'">
+				content LIKE '%' || #{coditionValue} || '%' AND
+			</if>
+			
+			<if test="startDate != null and endDate != null">
+				TO_CHAR(date_regi, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(date_regi, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate}
+			</if>
+			
+		</trim>
+		AND
+			state = 'Y'
+	</select>
+	
+	<update id="deleteReply" parameterType="list">
+		UPDATE j_story_comment
+		SET state = 'N' 
+		<trim prefix="WHERE" suffixOverrides="OR">
+			<foreach item="no" collection="list">
+				num = #{no} OR 
+			</foreach>
+		</trim>
+	</update>
+	
+</mapper>

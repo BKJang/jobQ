@@ -1,0 +1,27 @@
+
+   		UPDATE J_MEMBER as M JOIN J_CORP_INFO as C
+   		ON	M.ID=C.ID
+   		SET			
+				M.NAME = #{member_name},
+				M.PHONE = #{member_phone},
+				M.EMAIL = #{member_email},
+				M.HOMEPAGE = #{member_homepage, jdbcType=VARCHAR},
+				M.BIRTH = #{member_birth, jdbcType=DATE},
+				M.SEX = #{member_sex},
+				M.DATE_MODI = SYSDATE,
+				
+				C.COMPANY = #{member_companyName},
+				C.BOSS = #{member_boss},
+				C.NUMBER_CORP = #{member_numCompany},
+				C.TYPE = #{member_typeCompany},
+				C.BIRTH = #{member_birthCompany},
+				C.MEMBER = #{member_totalNumCompany},
+				C.EXPLAIN = #{member_explainCompany},
+				C.ADDRESS_1 = #{postNum},
+				C.ADDRESS_2 = #{full_address},
+				C.ADDRESS_3 = #{address3}
+				
+				
+   		WHERE 1=1
+		AND M.ID = #{member_id}
+		AND C.ID = #{member_id}

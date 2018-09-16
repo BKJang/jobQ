@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.login.login.service.impl.LoginMapper">
+
+	<select id="login" parameterType="string" resultType="hashMap">
+		SELECT
+		J.*, R.TITLE, R.RE_DELETE
+		
+		FROM
+		J_MEMBER J LEFT OUTER JOIN J_RESUME R
+		ON
+		J.ID = R.ID
+
+		WHERE J.ID = #{_parameter}
+
+
+	</select>
+	
+	
+
+
+</mapper>

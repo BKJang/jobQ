@@ -1,0 +1,88 @@
+#gallery {
+    position: absolute;
+    left: 0%;
+    top: auto;
+    margin: 0px 0 0 5px;
+    width: 100%;
+    height: auto;
+}
+
+.image {
+   	width: 250px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.image li {
+    display: none;
+}
+
+.image li:first-child {
+    display: block;
+}
+
+.image li img {
+    width: 250px;
+    height: 150px;
+}
+
+#thumbnail {
+    position: relative;
+    width: 250px;
+    height: 150px;
+    margin-top: 30px;
+}
+
+#thumbnail div {
+    float: left;
+}
+
+#thumbnail .prev {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 33px;
+    height: 27px;
+    padding-top: 20px;
+    text-align: center;	
+    cursor: pointer;
+}
+
+#thumbnail .next {
+    position: absolute;
+    right: 0;
+    top: 0;
+    left: 310px;
+    width: 33px;
+    height: 27px;
+    padding-top: 20px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#thumbnail .imgcontainer {
+    overflow: hidden;
+    position: relative;
+    left: 33px;
+    width: 280px;
+    height: 80px;
+}
+
+#thumbnail .imgcontainer ul {
+    position: absolute;
+    width: 800px;
+    margin-left: -20px;
+}
+
+#thumbnail .imgcontainer li {
+    float: left;
+    width: 90px;
+    height: 60px;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+#thumbnail .imgcontainer li img {
+    max-width: 100%;
+    height: auto;
+}

@@ -1,0 +1,147 @@
+/* common */
+a{color:#555}
+.favicon_wrap{display:inline-block;width:27%}
+.font_siz{font-size:15px}
+.bx_width{width:100%}
+.mt40{margin-top:40px}
+.hd5{float:left;font-size:19px;height:31px;line-height:21px;color:#3498db}
+.hd5_txt{margin:0 3px;color:#555}
+.fa-pencil-square-o{vertical-align:middle}
+.btnArea{margin:20px 0;text-align:right}
+.clear:after{content:"";display:block;clear:both}
+.col_blue{color:#3498db}
+.fl{float:left}
+.fr{float:right}
+.ipt1{width:100px}
+.ipt2{width:150px;}
+.ipt_txt{width:160px}
+.moneyArea .moneyTxt{float:left;width:150px;height:40px !important;margin:0 8px}
+.ipt_txt{display:inline-block;height:30px;line-height:30px;margin-left:6px}
+.addressArea input[type=text]{width:472px;height:31px !important;vertical-align:middle;margin-right:7px}
+#money_rule{float:left;width:15px;height:15px}
+.iptBx{display:inline-block;float:left;margin:0 10px;overflow:hidden}
+.iptBx input[type=text]{height:40px !important;float:left}
+.iptBx input[type=checkbox]{float:left;margin:13px 5px 0 0}
+.iptBx label{float:right;height:40px;line-height:40px;margin:0 8px 0 0}
+.select1{width:239px;height:40px;padding:0 0 0 10px;margin:0}
+.select1.typ2{width:100px;}
+.numList{float:left;height:40px;padding:0 0 0 5px;margin:0 5px 0 0}
+.numBx{display:inline-block;}
+.numBx input{height:40px}
+
+.list_top{padding-top:0}
+.tbl_Tit{display:block} 
+.tbl_vertical table{border-top:2px solid #ccc}
+.tbl_vertical table th{padding:12px!important;vertical-align:middle !important}
+.tbl_vertical table tr.txt_enter th{text-align:center}
+.tbl_vertical table td{vertical-align:middle !important}
+.tbl_vertical table td.date{color:#239fff}
+.total_top{font-size:15px;color:#f00}
+.bar_gray{color:#ccc}
+.list_count_fr{float:right;width:100px;height:30px;padding:0}
+.photo img{border:1px solid #ccc}
+.keyword li{float:left;margin:3px}
+.layerPop{float:right;margin:20px -33px 0 0}
+.tbl_noti{float:right;margin:10px 0;color:#1F80BB}
+
+/* Resumelist */
+.card_wrap{border:1px solid #ccc;border-bottom:0;margin-bottom:10px}
+.card_wrap ul{width:100%}
+.card_wrap ul.listResult > li{float:left;width:50%;border-bottom:1px solid #ccc}
+.card_wrap ul li .card{padding:18px;height:200px}
+.card_wrap ul li .card dt,
+.card_wrap ul li .card dd{float:left}
+.card_wrap ul li .card dt{width:17%;margin-right:3%}
+.card_wrap ul li .card dd{width:79%;margin-top:2px}
+.card_wrap ul li .card dd .info1 .name{font-weight:bold;color:#444}
+.card_wrap ul li .card dd .info2 strong{display:inline-block;margin:2px 0;font-size:15px}
+.card_wrap ul li .card dd .info3{font-size:12px;color:#239fff}
+.card_wrap ul li .card .job_list{font-size:12px}
+.card_wrap ul li .card .card_footWrap{border-top:1px solid #eee;padding-top:8px}
+.card_wrap ul li .card .card_footWrap .area_schedule{float:left;color:#999;font-size:12px;}
+.card_wrap ul li .card .card_footWrap .upload_time{float:right;color:#999}
+.card_wrap ul.listResult > li:list-child{border-left:1px solid #ccc}
+
+/* jobStory */
+.storyWrap{border-top:2px solid #ccc;border-bottom:1px solid #ccc;padding:20px 10px 40px 10px}
+.storyWrap ul li{border-top:1px solid #eee;padding:20px 0}
+.storyWrap ul li:first-child{border-top:0}
+.storyWrap ul li a.thumb{float:left;margin-right:20px;width:20%}
+.storyWrap ul li a img{width:100%;height:184px}
+.storyWrap ul li dl{float:left;width:78%;margin-bottom:0}
+.storyWrap ul li dl dt{font-size:22px;margin-bottom:20px}
+.storyWrap ul li dl dd.story_txt{font-size:15px;height:110px}
+.storyWrap ul li dl dd.last{font-size:14px;margin-top:3px}
+.storyView{border-bottom:1px solid #ccc}
+.storyView dl{width:100%;padding:20px}
+.storyView dl dt h5{font-size:25px;color:#3498db}
+.storyView dl dd.info{margin:25px 0 50px 0;border-bottom:1px solid #ccc;padding-bottom:10px;font-size:14px}
+.storyView dl dd.storyTxt img{display:block;width:90%;margin:0 auto}
+.storyView dl dd.storyTxt p{font-size:15px;margin-top:30px}
+.storyWrap ul.typ2 li{padding:0}
+.name{float:left}
+.clickCount{float:right}
+.replySection{width:100%;overflow:hidden;margin-bottom:55px;padding:20px;border:1px solid #e0e0e0;border-radius:10px;background-color:#f2f2f2}
+.replySection .photo {float:left;display:inline-block;width:98px;height:98px;margin:0 20px 0 0;border:1px solid #e0e0e0;background:url(../images/about/photo-reply.gif) no-repeat;}
+.replySection .writeReply {width:88%;float:left;position:relative;}
+.replySection .writeReply textarea {border:0;width:100%;padding:10px;resize:none;height:97px;}
+.replySection .writeReply .submit {display:inline-block;float:right;margin-top:5px}
+.replyList {border-top:2px solid #333;}
+.replyList .photo {float:left;display:inline-block;width:98px;height:98px;border:1px solid #e0e0e0;margin:0 20px;background:url(../images/about/photo-reply.gif) no-repeat;}
+.replyList .noneRe {border-bottom:1px solid #C6C6C6;text-align:center;font-size:13px;line-height:36px;padding-bottom:20px;}
+.replyList .replyView {display:block;float:left;position:relative;margin-bottom:20px;width:86%;}
+.replyList .name {margin-right:5px;font-size:16px;line-height:16px;color:#333;font-family:'nanum';}
+.replyList .reply {position:relative;display:block;width:100%;overflow:hidden;padding-top:10px;}
+.replyList .reply .txt {width:93%;display:block;float:left;min-height:60px;}
+.replyList .reply .btnGr {position:absolute;right:0;top:23px;}
+.replyList li {padding-top:20px;width:100%;overflow:hidden;border-bottom:1px solid #d0d0d0;}
+
+.storyWrap.noimg ul li dl{width:100%}
+
+/* table Write */
+.tbl_write{table-layout:fixed;width:100%;border-top:2px solid #ccc;border-bottom:1px solid #ccc}
+.tbl_write th{color:#337ab7}
+.tbl_write th,
+.tbl_write td{padding:10px 20px;text-align:left;border-top:1px solid #ddd;}
+.tbl_write th{background:#eee}
+.tbl_write th .bulit{display:inline-block;vertical-align:middle;height:18px}
+.tbl_write tr.last th{padding-left:30px}
+.tbl_write tr td input[type=text]{height:34px;padding:5px;margin-bottom:0}
+
+/* FAQ  */
+.faqTxt li{padding-left:20px;text-indent:-13px;margin:12px 0}
+
+/* NOTICE */
+.top-info .top_notice{width:100%;font-size:13px;}
+.notice_cont_bx{padding:20px 10px;margin:0 auto}
+.notice_cont_bx dl dt{font-size:25px;padding:20px;margin-top:20px;border-top:1px solid #ccc;border-bottom:1px solid #ccc}
+.notice_cont_bx dl dt .notiTit{float:left;width:90%;text-align:center;font-size:19px}
+.notice_cont_bx dl dt .noti_date{float:right;width:10%;font-size:15px;font-weight:normal;line-height:27px}
+.notice_cont_bx dl dd{padding:30px;border-bottom:1px solid #ccc}
+.notices{font-size:14px}
+.notices i{color:#3498db;margin-right:3px;font-weight:bold}
+.btnArrow .Previous{float:left}
+.btnArrow .next{float:right}
+
+/* aboutUs */
+.aboutUs .lead{padding-top:10px;font-size:14px !important;line-height:25px !important}
+.aboutUs .lead i{font-size:13px}
+.aboutUs .lead span{font-size:23px;font-weight:bold}
+.aboutUs .lead i,
+.aboutUs .lead span{color:#239fff}
+
+/* announce */
+.announce label{display:inline-block;float:left;margin-right:25px;line-height:39px}
+.announce .selBx label{margin-right:10px}
+.announce input[type=radio]{width:15px;height:15px;margin-top:13px}
+.announce .ipt_sel{width:120px;height:35px;padding:5px;margin-right:25px;float:left}
+
+/* 면접제의 */
+.offer{position:relative;overflow:hidden}
+.offer .btn_del{position:absolute;top:11px;right:6px}
+.offer .offer_img{float:left;border:1px solid #d9d9d9;width:150px;height:150px}
+.offer .offer_txt{float:left;width:940px;margin-left:15px}
+.offer .promo_box{padding:10px;height:150px}
+.offer .promo_box .form-control{padding:10px;border:none;text-align:left !important;height:80px;resize:none}
+.offer .promo_box span{display:inline-block;margin:7px 10px 0 0;font-size:14px;font-weight:bold}
+.offer .promo_box span .fw_normal{font-weight:normal}

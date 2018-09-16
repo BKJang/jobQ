@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.main.main.service.impl.MainMapper">
+
+
+	<select id="selectMainContents" parameterType="String"	resultType="egovMap">
+		SELECT 
+		C.COMPANY company,
+		J.TITLE title,
+		J.CAREER career,
+		(SELECT TO_CHAR(J.DATE_CLOSE, 'MM/DD')  FROM DUAL) date_close,
+		J.STATE state,
+		J.JOB_CLASS class,
+		J.IMAGE_LOGO image_logo,
+		J.JOB_NUMBER jobnumber
+
+		FROM 
+		J_CORP_INFO C,
+		J_JOB J
+
+		WHERE J.JOB_CLASS= '핫' 
+		AND C.ID = J.ID
+		AND J.STATE = 0
+	</select>
+	
+	
+	<select id="selectMainContents2" parameterType="String"	resultType="egovMap">
+		SELECT 
+		C.COMPANY company,
+		J.TITLE title,
+		J.CAREER career,
+		(SELECT TO_CHAR(J.DATE_CLOSE, 'MM/DD')  FROM DUAL) date_close,
+		J.STATE state,
+		J.JOB_CLASS class,
+		J.IMAGE_LOGO image_logo,
+		J.JOB_NUMBER jobnumber
+
+		FROM 
+		J_CORP_INFO C,
+		J_JOB J
+
+		WHERE J.JOB_CLASS= '스폐셜' 
+		AND J.STATE = 0
+		AND C.ID = J.ID
+	</select>
+	
+	
+	<select id="selectMainTip" parameterType="String"	resultType="egovMap">
+		SELECT 
+		T.CONTENT content
+
+		FROM
+		J_INTERVIEW T
+
+	</select>
+	
+	<select id="selectNotice" parameterType="String"	resultType="egovMap">
+		SELECT 
+		N.TITLE title
+		
+		FROM
+		J_NOTICE N
+
+	</select>
+	
+	
+	<select id="selectFaq" parameterType="String"	resultType="egovMap">
+		SELECT 
+		*
+		
+		FROM
+		J_FAQ
+		
+		WHERE
+		"PUBLIC" = 'Y'
+
+	</select>
+	
+		
+	<select id="selectStory" parameterType="String"	resultType="egovMap">
+	
+		SELECT
+		
+		S.NUM "number",
+		S.ID "id",
+		S.TITLE "title",
+		S.CONTENT "content",
+		S.IMAGE "image",
+		(SELECT TO_CHAR(S.DATE_REGI, 'MM/DD - HH12:MI ')  FROM DUAL) "date",
+		S.STATE "state",
+		S.HITS "hits",
+		(SELECT COUNT(*) FROM
+		J_STORY_COMMENT C WHERE C.NUM_STORY=S.NUM AND C.STATE = 'Y') "commentsCNT"
+
+
+		FROM J_STORY "S"
+		WHERE S.STATE = 'Y' 
+		ORDER BY "number" DESC
+
+	</select>
+
+
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer">
+            <bean class="egovframework.example.cmmn.web.EgovBindingInitializer"/>
+        </property>
+    </bean>
+    
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="alwaysUseFullPath" value="true"/>
+        <property name="interceptors">
+            <list>
+                <ref bean="localeChangeInterceptor" />
+            </list>
+        </property>
+    </bean>
+ 
+    <context:component-scan base-package="egovframework.example.admin" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+ 
+	<mvc:default-servlet-handler/>
+	
+	<task:executor id="mailExecutor" pool-size="5-10" queue-capacity="10" />
+	
+	<task:annotation-driven executor="mailExecutor" />
+
+	<!-- Excel Resolver -->
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="2" />
+	</bean>
+
+	<!-- FileUplaod Resolver -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10485769" />
+	</bean>
+	
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/admin/**/*" />
+			<mvc:exclude-mapping path="/admin/**/*.js"/>
+			<mvc:exclude-mapping path="/admin/**/*.css"/>
+			<mvc:exclude-mapping path="/admin/login"/>
+			<mvc:exclude-mapping path="/admin/logout"/>
+			<mvc:exclude-mapping path="/admin/slideboxTabMenu"/>
+			<mvc:exclude-mapping path="/admin/slidebox/close"/>
+			<mvc:exclude-mapping path="/admin/slidebox/toggle"/>
+			<!-- <mvc:exclude-mapping path="/admin/main"/> -->
+			<bean class="egovframework.example.admin.cmmn.interceptor.LeftMenuSelectInterceptor"/>
+		</mvc:interceptor>
+		
+		<mvc:interceptor>
+			<mvc:mapping path="/admin/**/*" />
+			<mvc:exclude-mapping path="/admin/**/*.js"/>
+			<mvc:exclude-mapping path="/admin/**/*.css"/>
+			<mvc:exclude-mapping path="/admin/login"/>
+			<mvc:exclude-mapping path="/admin/logout"/>
+			<mvc:exclude-mapping path="/admin/slideboxTabMenu"/>
+			<mvc:exclude-mapping path="/admin/slidebox/toggle"/>
+			<mvc:exclude-mapping path="/admin/slidebox/close"/>
+			<bean class="egovframework.example.admin.cmmn.interceptor.AuthInterceptor"/>
+		</mvc:interceptor>
+		
+	</mvc:interceptors>
+
+    <mvc:view-controller path="/cmmn/validator.do" view-name="cmmn/validator"/>
+</beans>

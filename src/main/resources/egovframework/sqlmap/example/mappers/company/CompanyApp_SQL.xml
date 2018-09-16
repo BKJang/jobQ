@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.company.applicants.service.impl.CompanyApplicantsMapper">
+
+	<select id ="selectAllGonggo" parameterType="Map" resultType="egovMap">
+	
+	    SELECT j.JOB_NUMBER, j.TITLE, j.NAME_WP, a.AREA
+		FROM J_JOB j, J_JOB_AREA a
+		WHERE 1=1
+		AND j.ID = #{id}
+		<if test="selectOne != 2">
+			AND j.CLOSING = #{selectOne}
+		</if>
+		AND j.JOB_NUMBER = a.JOB_NUMBER
+		ORDER BY j.JOB_NUMBER DESC
+	     
+	</select>
+	
+	
+	<!-- 지원자수를 가져오는 -->
+	<select id ="selectGonggoCount" resultType="int">
+	
+		SELECT  count(*)
+		FROM J_JOB j, J_APPLY a
+		WHERE 1=1
+		AND j.ID = #{param3} 
+		<if test="param1 != 0">
+			AND j.JOB_NUMBER = #{param1}
+		</if>
+		<if test="param2 != 2">
+			AND a.READ = #{param2}
+		</if>
+		AND j.JOB_NUMBER = a.JOB_NUMBER
+		AND a.CANCEL = '0'
+		
+	</select>
+	
+	<!-- 게재중인 공고 수 -->
+	<select id ="selectIngGonggoCount" parameterType="Map" resultType="int">
+	
+		SELECT  count(*)
+		FROM J_JOB j, J_APPLY a
+		WHERE 1=1
+		AND j.ID = #{id} 
+		<if test="gonggoNum != 0">
+			AND j.JOB_NUMBER = #{gonggoNum}
+		</if>
+		AND j.JOB_NUMBER = a.JOB_NUMBER
+		AND a.READ = '0'
+	</select>
+	
+	<!-- 마감된 수 -->
+	<select id ="selectEndGonggoCount" parameterType="Map" resultType="int">
+	
+		SELECT  count(*)
+		FROM J_JOB j, J_APPLY a
+		WHERE 1=1
+		AND j.ID = #{id} 
+		<if test="gonggoNum != 0">
+			AND j.JOB_NUMBER = #{gonggoNum}
+		</if>
+		AND j.JOB_NUMBER = a.JOB_NUMBER
+		AND a.READ = '1'
+	</select>
+	
+	<!-- 전체 지원자 리스트 -->
+	<select id ="selectAppList" parameterType="Map" resultType="egovMap">
+		
+		SELECT *
+		FROM (SELECT ROWNUM AS rnum, r.RE_NUMBER, r.MAINPIC, m.NAME, m.SEX, to_char(sysdate,'YYYY') cyear, to_char(m.BIRTH, 'YYYY') byear, m.BIRTH, r.TITLE, r.CONTENT, j.*
+				FROM J_MEMBER m, J_RESUME r,
+						(SELECT a.P_ID, a.DATE_APPLY, a.APP_ID, a.READ, a.STATE, j.*
+							FROM J_APPLY a, 
+								(SELECT j.JOB_NUMBER
+								  FROM J_JOB j
+								  WHERE 1=1
+								  AND j.ID = #{id}
+								 ) j
+							WHERE 1=1
+							<if test="gonggoNum != 0">
+								AND a.JOB_NUMBER = #{gonggoNum}
+							</if>
+							<if test="appState != 2">
+								AND a.READ = #{appState}
+							</if>
+							AND j.JOB_NUMBER = a.JOB_NUMBER
+							AND a.CANCEL = '0'
+						    AND a.A_DELETE = '0'
+						    ORDER BY a.DATE_APPLY DESC
+						    ) j
+				WHERE 1=1
+				AND j.P_ID = m.ID
+				AND j.P_ID = r.ID
+				)
+		WHERE rnum <![CDATA[>= #{row} AND ROWNUM <=]]>	 #{pageSize}
+	</select>
+	
+	<!-- 지원자 커리어 가져오기 -->
+	<select id ="selectCarrerList" parameterType="Object" resultType="egovMap">
+	
+		SELECT c.RE_NUMBER, c.DATE_ENTER startDate, c.DATE_FINISH finishDate
+		FROM J_RESUME r, J_RESUME_CAREER c, J_APPLY a
+		WHERE 1=1
+		<if test="_parameter != 0">
+			AND a.JOB_NUMBER = #{_parameter}
+		</if>
+		AND a.P_ID = r.ID
+		AND r.RE_NUMBER = c.RE_NUMBER
+		AND c.DATE_FINISH IS NOT NULL
+		AND c.DATE_ENTER IS NOT NULL
+	     
+	</select>
+	
+	<!-- 최종학력 가져오기 -->
+	<select id ="selectAcademicList" parameterType="Object" resultType="egovMap">
+	
+		SELECT c.NAME, c.STATE
+		FROM J_RESUME_ACADEMIC c
+		WHERE 1=1
+		AND c.RE_NUMBER = #{_parameter}
+		AND c.DATE_FINISH = (SELECT MAX(a.DATE_FINISH) AS SAL FROM J_RESUME_ACADEMIC a WHERE a.RE_NUMBER = #{_parameter} 
+							AND a.DATE_FINISH IS NOT NULL)
+	     
+	</select>
+	
+	<!-- 선택된 공고리스트 위에 쿼리문과 합칠수 있을듯 -->
+	<select id ="selectGonggoList" parameterType="Map" resultType="egovMap">
+	
+		SELECT j.JOB_NUMBER, j.TITLE, j.NAME_WP, a.AREA
+		FROM J_JOB j, J_JOB_AREA a
+		WHERE 1=1
+		AND j.ID = #{id}
+		<if test="closingNum != 2">
+			AND j.CLOSING = #{closingNum}
+		</if>
+		AND j.JOB_NUMBER = a.JOB_NUMBER
+		ORDER BY j.JOB_NUMBER DESC
+	     
+	</select>
+	
+	<!-- 합격여부 변경 처리 -->
+	<update id="changeState">
+		
+		UPDATE J_APPLY a
+		SET a.STATE = #{changeNum}
+		WHERE a.APP_ID = #{appId}
+
+	</update>
+   
+</mapper>

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.resume.dao.AdminResumeMapper">
+	
+	<resultMap type="adminResumeAcademicVO" id="academics">
+		<result property="schoolName" column="school_name" />
+		<result property="state" column="state" />
+		<result property="enterDate" column="SCHOOL_DATE_ENTER" />
+		<result property="finishedDate" column="SCHOOL_DATE_FINISH" />
+	</resultMap>
+	
+	<resultMap type="adminResumeCareerVO" id="carrers">
+		<result property="companyName" column="company_name" />
+		<result property="role" column="role" />
+		<result property="enterDate" column="CAREER_DATE_ENTER" />
+		<result property="finishedDate" column="CAREER_DATE_FINISH" />
+	</resultMap>
+	
+	<resultMap type="adminResumeVO" id="resume">
+		<id property="no" column="re_number" />
+		<result property="id" column="id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="area" column="area" />
+		<result property="skills" column="skill" />
+		<result property="type" column="type_employ" />
+		<result property="salary" column="salaryhope" />
+		<result property="isOpen" javaType="java.lang.Character" column="open" />
+		<result property="mainPic" column="mainpic" />
+		<result property="regDate" column="date_regi" />
+		<result property="updateDate" column="date_modi" />
+		
+		<result property="member.name" column="member_name" />
+		<result property="member.sex" javaType="java.lang.Character" column="sex" />
+		<result property="member.phone" column="phone" />
+		<result property="member.email" column="email" />
+		<result property="member.birthDate" column="birth" />
+		
+		<collection property="academics" resultMap="academics" />
+		<collection property="careers" resultMap="carrers" />
+	</resultMap>
+	
+	<resultMap type="adminResumeMainDatas" id="mainData">
+		<result property="data" column="data" />
+		<result property="type" column="type" />
+	</resultMap>
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.re_number, 
+	    	sup.id, 
+	    	sup.title, 
+	    	sup.salaryhope, 
+	    	sup.area,
+	    	sup.skill,
+	    	sup.open,
+	    	sup.date_regi, 
+	    	sup.date_modi,
+	    	sup.mainpic 
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.re_number, 
+			    	sub.id, 
+			    	sub.title, 
+			    	sub.salaryhope, 
+			    	sub.area,
+			    	sub.skill,
+			    	sub.open,
+			    	sub.date_regi, 
+			    	sub.date_modi,
+			    	sub.mainpic 
+				FROM (
+					    SELECT 
+					    	re_number, 
+					    	id, 
+					    	title, 
+					    	salaryhope, 
+					    	area,
+					    	skill,
+					    	re_open open,
+					    	date_regi, 
+					    	date_modi,
+					    	mainpic 
+					    FROM 
+					    	j_resume
+					    WHERE 
+					    	re_delete = 'Y'
+					    ORDER BY re_number DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<!-- 이력서 전체 개수 -->
+	<select id="countAllList" resultType="int">
+		SELECT COUNT(*) FROM j_resume WHERE re_number > 0 AND re_delete = 'Y'
+	</select>
+	
+	
+	<select id="getDetail" parameterType="int" resultMap="resume">
+		SELECT
+		    jr.re_number,
+		    jr.id,
+		    jr.title,
+		    jr.content,
+		    jr.area,
+		    jr.skill,
+		    jr.type_employ,
+		    jr.salaryhope,
+		    jr.re_open,
+		    jr.date_regi,
+		    jr.date_modi,
+		    jr.mainpic,
+		    
+		    jra.name school_name,
+		    jra.state,
+		    jra.date_enter school_date_enter,
+		    jra.date_finish school_date_finish,
+		   
+		    jrc.name company_name,
+		    jrc.re_work role,
+		    jrc.date_enter career_date_enter,
+		    jrc.date_finish career_date_finish,
+		    
+		    jm.name member_name,
+		    jm.phone,
+		    jm.email,
+		    jm.sex,
+		    jm.birth
+		FROM 
+			j_resume jr, 
+			j_resume_academic jra, 
+			j_resume_career jrc, 
+			j_member jm
+	  	WHERE jr.re_delete = 'Y'
+	  		AND jr.re_number = jra.re_number(+)
+	  		AND jr.re_number = jrc.re_number(+)
+	  		AND jr.id = jm.id
+	  		AND jr.re_number = #{no}
+	</select>
+	
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.re_number, 
+	    	sup.id, 
+	    	sup.title, 
+	    	sup.salaryhope, 
+	    	sup.area,
+	    	sup.skill,
+	    	sup.open,
+	    	sup.date_regi, 
+	    	sup.date_modi
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.re_number, 
+			    	sub.id, 
+			    	sub.title, 
+			    	sub.salaryhope, 
+			    	sub.area,
+			    	sub.skill,
+			    	sub.open,
+			    	sub.date_regi, 
+			    	sub.date_modi
+				FROM (
+						SELECT 
+					    	re_number, 
+					    	id, 
+					    	title, 
+					    	salaryhope, 
+					    	area,
+					    	skill,
+					    	re_open open,
+					    	date_regi, 
+					    	date_modi 
+					    FROM 
+					    	j_resume
+					 	<trim prefix="WHERE" suffixOverrides="AND">
+		
+					 		<if test="id != null">
+								id LIKE '%' || #{id} || '%' AND
+							</if>	
+					 	
+							<if test="level != null">
+								 last_academic LIKE '%' || #{level} || '%' AND
+							</if>
+							
+							<if test="startDate != null and endDate != null">
+								TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate} AND
+							</if>
+							
+							<if test="areas != null">
+							( 	
+								<trim suffixOverrides="OR">
+								<foreach item="area" collection="areas">
+									area LIKE '%' || #{area} || '%' OR
+								</foreach>
+								</trim>
+							) AND
+							</if>
+							
+							<if test="skills != null">
+							( 
+								<trim suffixOverrides="OR">
+								<foreach item="skill" collection="skills">
+									skill LIKE '%' || #{skill} || '%' OR
+								</foreach>
+								</trim>
+							)
+							</if>
+						</trim>
+						AND 
+					    	re_delete = 'Y'
+					 	ORDER BY re_number DESC
+					  ) sub
+				WHERE 
+					rownum <![CDATA[<=]]> #{endPage}) sup
+		WHERE 
+			rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			j_resume 
+		<trim prefix="WHERE" suffixOverrides="AND">
+		
+	 		<if test="id != null">
+				id LIKE '%' || #{id} || '%' AND
+			</if>	
+	 	
+			<if test="level != null">
+				 last_academic LIKE '%' || #{level} || '%' AND
+			</if>
+			
+			<if test="startDate != null and endDate != null">
+				TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[>=]]> #{startDate} AND TO_CHAR(reg_date, 'RRRR-MM-DD') <![CDATA[<=]]> #{endDate} AND
+			</if>
+			
+			<if test="areas != null">
+			( 
+				<trim suffixOverrides="OR">
+				<foreach item="area" collection="areas">
+					area LIKE '%' || #{area} || '%' OR
+				</foreach>
+				</trim>
+			) AND
+			</if>
+			
+			<if test="skills != null">
+			( 
+				<trim suffixOverrides="OR">
+				<foreach item="skill" collection="skills">
+					skill LIKE '%' || #{skill} || '%' OR
+				</foreach>
+				</trim>
+			)
+			</if>
+		</trim>
+		AND 
+	    	re_delete = 'Y'
+	</select>
+	
+	<select id="getResumeMainData" resultMap="mainData">
+		SELECT area data, 'area' as type
+		FROM j_area 
+		UNION ALL
+		SELECT skill, 'skill'
+		FROM j_skill
+	</select>
+	
+	<!-- 메인 공고 삭제 -->
+	<update id="delete" parameterType="list">
+		UPDATE j_resume  
+		SET re_delete = 'N'  
+		<trim prefix="WHERE">
+			re_number IN
+				<foreach item="no" collection="list" open="(" separator="," close=")" >
+					#{no}
+				</foreach>
+		</trim>
+	</update>
+	
+</mapper>

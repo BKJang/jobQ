@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.aboutjobq.faq.service.impl.FaqMapper">
+
+
+	<select id="selectFaqList" parameterType="String"	resultType="egovMap">		
+		SELECT 
+		
+		*
+
+		FROM 
+		J_FAQ
+	</select>
+	
+	<select id="selectFaqList1" parameterType="String"	resultType="egovMap">		
+		SELECT 
+		
+		*
+
+		FROM 
+		J_FAQ
+		
+		WHERE 1=1
+		AND SUBJECT = '회원가입'
+	</select>
+	
+	
+	<select id="selectFaqList2" parameterType="String"	resultType="egovMap">		
+		SELECT 
+		
+		*
+
+		FROM 
+		J_FAQ		
+				
+		WHERE 1=1
+		AND SUBJECT = '로그인'
+	</select>
+	
+	<select id="selectFaqList3" parameterType="String"	resultType="egovMap">		
+		SELECT 
+		
+		*
+
+		FROM 
+		J_FAQ	
+			
+		WHERE 1=1
+		AND SUBJECT = '공고등록'
+	</select>
+	
+	</mapper>

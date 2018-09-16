@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.person.resume.service.impl.PersonResumeMapper">
+	
+	<!-- 이력서에서 개인 정보 가져오기 -->
+	<select id ="selectPersonMainInfo"  resultType="egovMap" parameterType="String">
+      SELECT  NAME name,
+      		PHONE phone,
+      		EMAIL email,
+      		HOMEPAGE homepage,
+      		SEX,
+      		TRUNC(MONTHS_BETWEEN(sysdate, BIRTH)/12)+1 birth,
+      		ID id
+      FROM J_MEMBER
+      WHERE 1=1
+      	AND	ID = #{_parameter}
+      		
+   </select>	
+   	<!-- 이력서 학력정보 가져오기 -->
+   	<select id ="selectPersonAcademicInfo"  resultType="egovMap" parameterType="String">
+   	  SELECT  TO_CHAR(ACA.DATE_ENTER, 'YYYY-MM-DD') academic_date_enter,
+      		TO_CHAR(ACA.DATE_FINISH, 'YYYY-MM-DD') academic_date_finish,
+      		ACA.NAME academic_name,
+      		ACA.STATE academic_state
+      FROM J_RESUME R,
+      	   J_RESUME_ACADEMIC ACA
+      WHERE 1=1
+      	AND R.ID = #{_parameter}
+      	AND R.RE_NUMBER = ACA.RE_NUMBER
+      	AND ACA.NAME IS NOT NULL
+      ORDER BY academic_date_enter, academic_date_finish	
+    </select>    
+    <!-- 이력서 경력정보 가져오기 -->
+    <select id ="selectPersonCareerInfo"  resultType="egovMap" parameterType="String">
+   	  SELECT  TO_CHAR(CAR.DATE_ENTER, 'YYYY-MM-DD') career_date_enter,
+      		  TO_CHAR(CAR.DATE_FINISH, 'YYYY-MM-DD') career_date_finish,
+      		  CAR.NAME career_name,
+      		  CAR.RE_WORK career_work,
+      		  TRUNC(MONTHS_BETWEEN(CAR.DATE_FINISH, CAR.DATE_ENTER)) career_month
+      FROM J_RESUME R,
+      	   J_RESUME_CAREER CAR
+      WHERE 1=1
+      	AND R.ID = #{_parameter}
+      	AND R.RE_NUMBER = CAR.RE_NUMBER
+      	AND CAR.NAME IS NOT NULL
+      ORDER BY career_date_enter, career_date_finish	
+    </select>    
+    
+   	<!-- 이력서 정보 가져오기 -->
+  	<select id ="selectPersonResumeInfo"  resultType="egovMap" parameterType="String">
+      SELECT  R.RE_NUMBER resume_number,
+      		  R.SALARYHOPE salary_hope,
+      		  R.TYPE_EMPLOY type_employ,
+      		  R.CONTENT content,
+      		  R.TITLE title,      		  
+      		  R.LAST_ACADEMIC last_academic,
+      		  R.AREA area_name,
+      		  R.SKILL skill_name,
+      		  R.RE_DELETE re_delete,
+      		  R.RE_OPEN re_open,
+      		  R.MAINPIC main_pic
+      FROM J_RESUME R      	   
+      WHERE 1=1
+      	AND R.ID = #{_parameter}
+   </select>
+   
+   <!-- 이력서 등록시 지역정보 가져오기 -->
+   <select id ="selectResumeAreaInfo"  resultType="egovMap" parameterType="String">
+      SELECT A.AREA area_name
+      FROM J_AREA A     	
+   </select>
+   
+   <!-- 이력서 등록시 기술정보 가져오기 -->
+   <select id ="selectResumeSkillInfo"  resultType="egovMap" parameterType="String">
+      SELECT S.SKILL skill_name
+      FROM J_SKILL S     	
+   </select>
+   
+   <!-- 이력서 등록 및 수정 -->
+   
+   <delete id="deleteAcademicInfo" parameterType="String">
+   	  DELETE FROM 
+   	  		J_RESUME_ACADEMIC
+   	  WHERE RE_NUMBER = #{resumeNumber}		
+   </delete>
+   <delete id="deleteCareerInfo" parameterType="String">
+   	  DELETE FROM 
+   	  		J_RESUME_CAREER
+   	  WHERE RE_NUMBER = #{resumeNumber}		
+   </delete>
+   
+   <update id = "insertResumeInfo" parameterType="Map">
+      UPDATE J_RESUME SET
+      						TITLE = #{title},
+      						LAST_ACADEMIC = #{lastAcademic},
+      						SALARYHOPE = #{money},
+      						TYPE_EMPLOY = #{jobType},
+      						DATE_REGI = sysdate,
+      						DATE_MODI = sysdate,
+      						CONTENT = #{comment},
+      						AREA = #{areaList},
+      						SKILL = #{skillList},
+      						RE_OPEN = 'Y',
+      						RE_DELETE = 'Y'
+      				WHERE
+      						RE_NUMBER = #{resumeNumber}		
+   </update>
+   
+   <insert id = "insertAcademicInfo" parameterType="Object">
+      INSERT INTO J_RESUME_ACADEMIC(DATE_ENTER, DATE_FINISH, NAME, STATE, RE_KEY, RE_NUMBER) 
+      				VALUES(
+      						#{param1, jdbcType=VARCHAR},
+      						#{param2, jdbcType=VARCHAR},
+      						#{param3, jdbcType=VARCHAR},
+      						#{param4, jdbcType=VARCHAR},
+      						aca_seq.NEXTVAL,
+      						#{param5}
+      						)			
+   </insert>
+   
+   <insert id = "insertCareerInfo" parameterType="Object">
+      INSERT INTO J_RESUME_CAREER(DATE_ENTER, DATE_FINISH, NAME, RE_WORK, RE_KEY, RE_NUMBER) 
+					VALUES(
+      						#{param1, jdbcType=VARCHAR},
+      						#{param2, jdbcType=VARCHAR},
+      						#{param3, jdbcType=VARCHAR},
+      						#{param4, jdbcType=VARCHAR},
+      						car_seq.NEXTVAL,
+      						#{param5}	
+      						)		
+   </insert>
+   
+   <update id = "deleteResumeInfo" parameterType="String">
+      UPDATE J_RESUME SET
+      						
+      						RE_DELETE = 'N'
+      				WHERE
+      						RE_NUMBER = #{resumeNumber}		
+   </update>
+   
+   <update id = "closeResumeInfo" parameterType="String">
+      UPDATE J_RESUME SET
+      						
+      						RE_OPEN = 'N'
+      				WHERE
+      						RE_NUMBER = #{resumeNumber}		
+   </update>
+   
+   <update id = "openResumeInfo" parameterType="String">
+      UPDATE J_RESUME SET
+      						
+      						RE_OPEN = 'Y'
+      				WHERE
+      						RE_NUMBER = #{resumeNumber}		
+   </update>
+
+</mapper>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.company.job.service.impl.CompanyJobMapper">
+	
+	<!-- 스킬 정보 가져오기 -->
+	<select id ="skillList"  resultType="egovMap">
+      SELECT  *
+      FROM J_SKILL
+      WHERE 1=1
+   </select>
+   
+   
+   <!-- 기본 정보 가져오기 -->
+	<select id="cmList"  parameterType="String" resultType="egovMap">
+      SELECT  m.ID, m.NAME, m.PHONE, m.EMAIL, c.MAINPIC, c.ADDRESS_1 postNum, c.ADDRESS_2 add2, c.ADDRESS_3 add3, c.AREA area
+      FROM J_MEMBER m, J_CORP_INFO c
+      WHERE 1=1 
+      AND m.ID = #{_parameter}
+      AND c.ID = m.ID
+   </select>
+   
+   
+    <!-- 회원타입 가져오기 가져오기 -->
+	<select id="selectType"  parameterType="String" resultType="String">
+      SELECT ID
+      FROM J_JOB j
+      WHERE 1=1 
+      AND j.JOB_NUMBER = #{_parameter}
+   </select>
+   
+   
+   <!-- 회원타입 가져오기 가져오기 -->
+	<select id="selectAppGubnun" resultType="String">
+      SELECT a.APP_ID
+      FROM J_APPLY a
+      WHERE 1=1 
+      AND a.P_ID = #{param1}
+      AND a.JOB_NUMBER = #{param2}
+   </select>
+   
+   <!-- 회사 내 사진 기본 가져오기 -->
+   	<select id ="selectComPicList" resultType="egovMap">
+      	SELECT  p.PIC_ROUTE
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.M_ID = #{param1}
+		AND p.PIC_DIV = #{param2}
+		ORDER BY p.CGPIC_ID ASC
+   	</select>
+   	
+   	<select id ="selectMultiPic" resultType="egovMap">
+      	SELECT  p.PIC_ROUTE
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.GONGGO_NUM = #{_parameter}
+		ORDER BY p.CGPIC_ID ASC
+   	</select>
+  
+   <select id="selectGonggo"  parameterType="Map" resultType="egovMap">
+      SELECT  j.JOB_NUMBER
+      , j.TITLE
+      , j.NAME_WP
+      , j.IMAGE_LOGO
+      , j.ADDRESS_WP_1
+      , j.ADDRESS_WP_2
+      , j.ADDRESS_WP_3
+      , j.TYPE_EMPLOY
+      , j.NUMBER_EMPLOY
+      , j.CAREER
+      , j.ACADEMIC
+      , j.SALARY
+      , j.DATE_CLOSE
+      , j.NAME_CM
+      , j.CLOSING
+      , j.PHONE_CM
+      , j.EMAIL_CM
+      , j.DATE_MODI
+      , j.SKILL_LIST
+      , j.DATE_REGI
+      , j.LAT
+      , j.LNG
+      , c.CONTENT
+      , a.AREA
+      , i.COMPANY
+      , i.BIRTH
+      , i.MEMBER
+      , i.TYPE
+      , i.HOMEPAGE
+      FROM J_JOB j, J_JOB_CONTENT c, J_JOB_AREA a, J_CORP_INFO i
+      WHERE 1=1 
+      AND j.JOB_NUMBER = #{gonggo} 
+      AND j.JOB_NUMBER = c.JOB_NUMBER
+      AND j.JOB_NUMBER = a.JOB_NUMBER
+      AND i.ID = j.ID
+   </select>
+   
+   
+    <update id="changeCloseDate">
+
+		UPDATE J_JOB j
+		SET j.DATE_CLOSE = #{closeDate}
+		WHERE j.ID=#{id}
+		AND j.JOB_NUMBER = #{gonggoNum}
+
+	</update>
+</mapper>

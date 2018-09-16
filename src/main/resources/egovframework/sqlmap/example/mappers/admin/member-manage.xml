@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.member.mapper.AdminMemberMapper">
+	<resultMap id="address" type="addressVO">
+		<result property="zipCode" column="zip_code" />
+		<result property="roadAddr" column="road_address" />
+		<result property="detailAddr" column="detail_address" />
+	</resultMap>
+	
+	<resultMap id="phone" type="phoneVO">
+		<result property="firstNumber" column="first_number" />
+		<result property="midNumber" column="mid_number" />
+		<result property="lastNumber" column="last_number" />
+	</resultMap>
+	
+	<resultMap id="email" type="emailVO">
+		<result property="emailId" column="email_id" />
+		<result property="emailDomain" column="email_domain" />
+	</resultMap>
+	
+	<resultMap type="adminMemberVO" id="member">
+		<id property="id" column="id" />
+		<result property="name" column="name"/>
+		<result property="type" column="type"/>
+		<result property="age" column="age"/>
+		<result property="sex" column="sex"/>
+		<result property="homepage" column="homepage"/>
+		<!-- java.util.Date로 받으면  'Thu Sep 07 23:06:25 KST 2017'식으로 나온다. -->
+		<!-- java.sql.Date로 받아야  '2017-01-01'식으로 나온다. -->
+		<!-- javaType="java.util.Date"으로 해도, 받는 타입이 java.util.Date여도 된다. 실제로 밑에 birthDate는 java.util.Date이다. -->
+		<result property="birthDate" javaType="java.sql.Date" column="birth"/>
+		<result property="regDate" javaType="java.sql.Date" column="date_join"/>
+		<result property="updateDate" javaType="java.sql.Date" column="date_modi"/>
+		
+		<!-- association과 collection을 같이 쓸 수 없다. -->
+		<association property="phone" javaType="phoneVO" resultMap="phone"/>
+		<association property="email" javaType="emailVO" resultMap="email"/>
+	</resultMap>
+	
+	<resultMap type="adminCompanyMemberVO" id="companyMember">
+		<result property="companyName" column="company_name"/>
+		<result property="bossName" column="boss_name"/>
+		<result property="type" column="company_type"/>
+		<result property="companyMemberNumber" column="company_member_number"/>
+		<result property="companyBirthDate" javaType="java.sql.Date" column="company_birthdate"/>
+		<result property="companyExplain" column="company_explain"/>
+		<result property="companyHomepage" column="company_homepage"/>
+		
+		<result property="companyNumber.firstCompanyNumber" column="company_first_number"/>
+		<result property="companyNumber.midCompanyNumber" column="company_mid_number"/>
+		<result property="companyNumber.lastCompanyNumber" column="company_last_number"/>
+		
+		<result property="companyAddr.zipCode" column="company_address_zipcode"/>
+		<result property="companyAddr.roadAddr" column="company_address_road_address"/>
+		<result property="companyAddr.detailAddr" column="company_address_detail_address"/>
+		
+		<association property="member" javaType="adminMemberVO" resultMap="member" />
+	</resultMap>
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			main.*
+		FROM (
+			SELECT 
+				rownum rnum, sub.*
+			FROM 
+				(
+					SELECT *
+					FROM j_member
+					ORDER BY date_join DESC
+				) sub
+			WHERE
+				rownum <![CDATA[<=]]> #{endPage} 
+		) main
+		WHERE
+		  rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countAllList" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM 
+			j_member
+		WHERE
+			id > '0'
+	</select>
+	
+	<delete id="delete" parameterType="list" >
+		DELETE 
+		FROM j_member
+		<trim prefix="WHERE">
+			id IN 
+			<foreach item="id" collection="list" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</trim>
+	</delete>
+	
+	<select id="getMemberDetail" parameterType="hashMap" resultMap="member">
+			SELECT 
+				m.id,
+				m.type,
+				m.name,
+				m.sex,
+				m.birth,
+				m.homepage,
+				m.date_join, 
+				m.date_modi,
+				SUBSTR(m.phone, 1, INSTR(m.phone, '-', 1, 1)-1) first_number,
+			    SUBSTR(m.phone, INSTR(m.phone, '-', 1, 1) + 1, INSTR(m.phone, '-', 1, 2) - (INSTR(m.phone, '-', 1, 1) + 1)) mid_number,
+			    SUBSTR(m.phone, INSTR(m.phone, '-', 1, 2) + 1) last_number,
+			    SUBSTR(m.email, 1, INSTR(m.email, '@') - 1) email_id,
+			    SUBSTR(m.email, INSTR(m.email, '@', 1, 1) + 1) email_domain
+			FROM
+				j_member m
+			WHERE
+				m.id = #{id}
+	</select>
+	
+	<select id="getCompanyMemberDetail" parameterType="hashMap" resultMap="companyMember">
+		SELECT 
+			m.id id,
+			m.type type,
+			m.name name,
+			m.sex sex,
+			m.birth birth,
+			m.homepage homepage,
+			m.date_join date_join, 
+			m.date_modi date_modi,
+			SUBSTR(m.phone, 1, INSTR(m.phone, '-', 1, 1)-1) first_number,
+		    SUBSTR(m.phone, INSTR(m.phone, '-', 1, 1) + 1, INSTR(m.phone, '-', 1, 2) - (INSTR(m.phone, '-', 1, 1) + 1)) mid_number,
+		    SUBSTR(m.phone, INSTR(m.phone, '-', 1, 2) + 1) last_number,
+		    SUBSTR(m.email, 1, INSTR(m.email, '@') - 1) email_id,
+		    SUBSTR(m.email, INSTR(m.email, '@', 1, 1) + 1) email_domain, 
+			c.company company_name, 
+			c.boss boss_name,
+			SUBSTR(c.number_corp, 1, INSTR(c.number_corp, '-', 1, 1)-1) company_first_number,
+		    SUBSTR(c.number_corp, INSTR(c.number_corp, '-', 1, 1) + 1, INSTR(c.number_corp, '-', 1, 2) - (INSTR(c.number_corp, '-', 1, 1) + 1)) company_mid_number,
+		    SUBSTR(c.number_corp, INSTR(c.number_corp, '-', 1, 2) + 1) company_last_number,
+			c.birth company_birthdate,
+			c.type company_type,
+			c.address_1 company_address_zipcode,
+			c.address_2 company_address_road_address,
+			c.address_3 company_address_detail_address,
+			c.explain company_explain,
+			c.homepage company_homepage,
+			c.member company_member_number
+		FROM 
+			j_member m, j_corp_info c
+		WHERE
+			m.id = c.id
+		AND 
+			m.id = #{id}
+	</select>
+	
+	<select id="getMemberInfoForExcel" parameterType="list" resultMap="member">
+		SELECT 
+			m.id,
+			m.type,
+			m.name,
+			m.sex,
+			m.birth,
+			m.homepage,
+			m.date_join, 
+			m.date_modi,
+			SUBSTR(m.phone, 1, INSTR(m.phone, '-', 1, 1)-1) first_number,
+		    SUBSTR(m.phone, INSTR(m.phone, '-', 1, 1) + 1, INSTR(m.phone, '-', 1, 2) - (INSTR(m.phone, '-', 1, 1) + 1)) mid_number,
+		    SUBSTR(m.phone, INSTR(m.phone, '-', 1, 2) + 1) last_number,
+		    SUBSTR(m.email, 1, INSTR(m.email, '@') - 1) email_id,
+		    SUBSTR(m.email, INSTR(m.email, '@', 1, 1) + 1) email_domain
+		FROM
+			j_member m
+		<trim prefix="WHERE" suffixOverrides="OR">
+			(
+			<foreach item="id" collection="list">
+				<choose>
+					<when test="id == 'all'">
+						m.id > '0'
+					</when>
+					<otherwise>
+						m.id = #{id} OR
+					</otherwise>
+				</choose>	
+			</foreach>
+		</trim>
+		)
+	</select>
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			main.*
+		FROM (
+			SELECT 
+				rownum rnum, sub.*
+			FROM 
+				(
+					SELECT *
+					FROM 
+						j_member
+					<trim prefix="WHERE" >
+						<choose>
+							<when test="coditionKey == 'id'">
+								id LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'name'">
+								name LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'email'">
+								email LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'phone'">
+								phone LIKE '%' || #{coditionValue} || '%'
+							</when>
+						</choose>
+					</trim>
+					ORDER BY date_join DESC
+				) sub
+			WHERE
+				rownum <![CDATA[<=]]> #{endPage} 
+		) main
+		WHERE
+		  rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM 
+			j_member
+		<trim prefix="WHERE" >
+			<choose>
+				<when test="coditionKey == 'id'">
+					id LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'name'">
+					name LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'email'">
+					email LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'phone'">
+					phone LIKE '%' || #{coditionValue} || '%'
+				</when>
+			</choose>
+		</trim>
+	</select>
+		
+	<!-- parameterType과 resultMap에서 정의한 id는 서로 다르다. -->
+	<insert id="registGeneralMember" parameterType="adminMemberVO">
+		INSERT INTO 
+			j_member 
+				(id, type, password, name, phone, email, sex, homepage, birth)
+			VALUES 
+				(#{id}, 'p', #{password}, #{name}, #{phone.fullPhoneNumber}, #{email.fullEmail}, #{sex}, #{homepage}, #{birthDate})
+	</insert>
+	
+	<select id="duplicate" parameterType="string" resultType="string">
+		SELECT id
+		FROM j_member
+		WHERE id = #{id}
+	</select>
+	
+	<select id="getEmailForm" parameterType="string" resultType="string">
+		SELECT 
+			form_content 
+		FROM 
+			j_email 
+		WHERE 
+			form_name = #{_parameter} 
+		AND
+			form_use = 'Y'
+	</select>
+	
+	<insert id="registCompanyMember" parameterType="adminCompanyMemberVO">
+		INSERT ALL
+		 INTO 
+		 	J_MEMBER (type, id, password, name, email, phone, birth, sex, homepage, is_active)
+		 VALUES 
+		 	('c', #{member.id}, #{member.password}, #{member.name}, #{member.email.fullEmail}, #{member.phone.fullPhoneNumber, jdbcType=VARCHAR}, #{member.birthDate}, #{member.sex}, #{member.homepage, jdbcType=VARCHAR}, 'Y')
+		 
+		 INTO 
+		 	J_CORP_INFO (id, company, boss, number_corp, type, birth, member, explain, address_1, address_2, address_3, homepage)
+		 VALUES 
+		 	(#{member.id}, #{companyName}, #{bossName}, #{companyNumber.fullCompanyNumber}, #{type, jdbcType=VARCHAR}, #{companyBirthDate, jdbcType=DATE}, #{companyMemberNumber, jdbcType=VARCHAR}, #{companyExplain}, #{companyAddr.zipCode}, #{companyAddr.roadAddr}, #{companyAddr.detailAddr}, #{companyHomepage, jdbcType=VARCHAR})
+		 
+		 SELECT * FROM DUAL
+	</insert>
+	
+	<select id="getGeneralMembers" resultMap="member">
+		SELECT * FROM j_member WHERE type = 'p'
+	</select>
+	
+	<select id="countGeneralMembers" resultType="int">
+		SELECT COUNT(*) FROM j_member WHERE type = 'p'
+	</select>
+	
+	<select id="getCompanyMebers" resultMap="member">
+		SELECT * FROM j_member WHERE type = 'c'
+	</select>
+	
+	<select id="getJobHunters">
+		
+	</select>
+</mapper>

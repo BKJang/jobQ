@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.main.resumelist.service.impl.MainResumeListMapper">
+	
+	<!-- 인재정보 좌측 직종상세 -->
+    <select id ="selectResumeSkillInfo"  resultType="egovMap">
+      SELECT DISTINCT  S.SKILL skill_name
+      FROM J_SKILL S,
+           J_RESUME R
+      WHERE R.SKILL LIKE '%'||S.SKILL||'%' 
+      AND R.RE_DELETE = 'Y'
+       	AND R.RE_OPEN = 'Y'
+      ORDER BY S.SKILL	
+    </select>
+    
+	<!-- 인재정보메인 : 인재 이력 -->
+  	<select id ="selectMainResumeInfo"  resultType="egovMap">
+      SELECT  M.NAME name,
+      		  M.SEX sex,
+      		  TRUNC(MONTHS_BETWEEN(sysdate, M.BIRTH)/12)+1 birth, 
+      		  R.RE_NUMBER resume_number,
+      		  R.TYPE_EMPLOY type_employ,
+      		  R.LAST_ACADEMIC last_academic,
+      		  R.AREA area_name,
+      		  R.SKILL skill_name,
+      		  R.TITLE      		  
+      FROM J_RESUME R,
+      	   J_MEMBER M      	      
+      WHERE 1=1
+      	AND R.ID = M.ID
+       	AND R.TITLE IS NOT NULL
+      ORDER BY R.RE_NUMBER
+   </select>
+   
+   <select id="selectNumberOfResume" resultType="egovMap">
+      SELECT COUNT(TITLE) count
+      FROM	J_RESUME
+   </select>
+   <!-- 총경력 -->
+   <!-- <select id ="selectPersonCareerInfo"  resultType="egovMap">
+   	  SELECT  TRUNC(MONTHS_BETWEEN(CAR.DATE_FINISH, CAR.DATE_ENTER)) career_month
+      FROM J_RESUME R,
+      	   J_RESUME_CAREER CAR    	  
+      WHERE 1=1      	
+      	AND R.RE_NUMBER = CAR.RE_NUMBER
+     </select>  -->
+   	<!-- 이력서에서 개인 정보 가져오기 -->
+	<select id ="selectPersonMainInfo"  resultType="egovMap" parameterType="String">
+      SELECT  NAME name,
+      		M.PHONE phone,
+      		M.EMAIL email,
+      		M.HOMEPAGE homepage,
+      		M.SEX,
+      		TRUNC(MONTHS_BETWEEN(sysdate, M.BIRTH)/12)+1 birth,
+      		M.ID id
+      FROM J_MEMBER M,
+      	   J_RESUME R
+      WHERE 1=1
+      	AND	R.RE_NUMBER = #{_parameter}
+      	AND R.ID = M.ID
+      		
+   </select>	
+   	<!-- 이력서 학력정보 가져오기 -->
+   	<select id ="selectPersonAcademicInfo"  resultType="egovMap" parameterType="String">
+   	  SELECT  TO_CHAR(ACA.DATE_ENTER, 'YYYY-MM-DD') academic_date_enter,
+      		TO_CHAR(ACA.DATE_FINISH, 'YYYY-MM-DD') academic_date_finish,
+      		ACA.NAME academic_name,
+      		ACA.STATE academic_state
+      FROM J_RESUME R,
+      	   J_RESUME_ACADEMIC ACA
+      WHERE 1=1
+      	AND R.RE_NUMBER = #{_parameter}
+      	AND R.RE_NUMBER = ACA.RE_NUMBER
+      	AND ACA.NAME IS NOT NULL
+      ORDER BY academic_date_enter, academic_date_finish
+    </select>    
+    <!-- 이력서 경력정보 가져오기 -->
+    <select id ="selectPersonCareerInfo"  resultType="egovMap" parameterType="String">
+   	  SELECT  TO_CHAR(CAR.DATE_ENTER, 'YYYY-MM-DD') career_date_enter,
+      		  TO_CHAR(CAR.DATE_FINISH, 'YYYY-MM-DD') career_date_finish,
+      		  CAR.NAME career_name,
+      		  CAR.RE_WORK career_work,
+      		  TRUNC(MONTHS_BETWEEN(CAR.DATE_FINISH, CAR.DATE_ENTER)) career_month
+      FROM J_RESUME R,
+      	   J_RESUME_CAREER CAR
+      WHERE 1=1
+      	AND R.RE_NUMBER = #{_parameter}
+      	AND R.RE_NUMBER = CAR.RE_NUMBER
+      	AND CAR.NAME IS NOT NULL
+      ORDER BY career_date_enter, career_date_finish
+    </select>    
+    
+   	<!-- 이력서 정보 가져오기 -->
+  	<select id ="selectPersonResumeInfo"  resultType="egovMap" parameterType="String">
+      SELECT  R.RE_NUMBER resume_number,
+      		  R.SALARYHOPE salary_hope,
+      		  R.TYPE_EMPLOY type_employ,
+      		  R.CONTENT content,
+      		  R.TITLE title,      		  
+      		  R.LAST_ACADEMIC last_academic,
+      		  R.AREA area_name,
+      		  R.SKILL skill_name,
+      		  R.MAINPIC main_pic
+      FROM J_RESUME R      	   
+      WHERE 1=1
+      	AND R.RE_NUMBER = #{_parameter}
+   </select>
+   
+   <select id="selectPagingList" parameterType="pagingVO" resultType="egovMap">
+		SELECT b.* FROM
+		  (SELECT a.*,
+		        FLOOR( (a.rnum - 1) / #{rows} + 1) pageNumber
+		  FROM (SELECT  M.NAME name,
+      		  M.SEX sex,
+      		  TRUNC(MONTHS_BETWEEN(sysdate, M.BIRTH)/12)+1 birth, 
+      		  R.RE_NUMBER resume_number,
+      		  R.TYPE_EMPLOY type_employ,
+      		  R.LAST_ACADEMIC last_academic,
+      		  R.AREA area_name,
+      		  R.SKILL skill_name,
+      		  R.TITLE,
+      		  R.MAINPIC main_pic,
+      		  ROWNUM rnum   		  
+      FROM J_RESUME R,
+      	   J_MEMBER M      	      
+      WHERE 1=1
+      	AND R.ID = M.ID
+       	AND R.RE_DELETE = 'Y'
+       	AND R.RE_OPEN = 'Y'
+       	<if test="keyword != null"> 
+       	AND R.SKILL LIKE '%'||#{keyword}||'%'
+       	</if>
+		      ORDER BY rnum ASC) a
+		  ) b
+		WHERE pageNumber = #{page}
+		ORDER BY b.rnum ASC
+	</select>
+	
+	<select id="selectPagingListCnt" parameterType="pagingVO" resultType="egovMap">
+		SELECT count(*) TOTAL_TOT_CNT,
+	        CEIL(count(*) / #{rows}) TOTAL_PAGE
+		FROM J_RESUME R
+		WHERE 1=1
+		AND R.RE_DELETE = 'Y'
+		AND R.RE_OPEN = 'Y'
+		<if test="keyword != null"> 
+		AND R.SKILL LIKE '%'||#{keyword}||'%'
+		</if>
+		ORDER BY ID ASC
+	</select>
+	
+	<update id="updateRead">
+
+			UPDATE J_APPLY a
+			SET a.READ = '1'
+			WHERE a.APP_ID = #{_parameter}
+
+	</update>
+</mapper>

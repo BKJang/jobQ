@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.company.main.service.impl.CompanyMapper">
+	
+	<!-- 개인회원 메인페이지 정보 가져오기 -->
+	<select id ="selectCompanyMainInfo" parameterType="String" resultType="egovMap">
+      SELECT  M.NAME name,
+      		M.PHONE phone,
+      		M.EMAIL email,
+      		M.SEX sex,
+      		C.MAINPIC mainpic,
+      		C.COMPANY company,
+      		C.BOSS boss,
+      		C.NUMBER_CORP numberCorp,
+      		C.TYPE type,
+      		C.MEMBER member,
+      		C.BIRTH birth,
+      		C.EXPLAIN explain,
+      		C.ADDRESS_2 address,
+      		C.ADDRESS_3 addressD,
+      		C.HOMEPAGE homepage,
+      		M.ID id
+      FROM J_MEMBER M,
+      	   J_CORP_INFO C
+      WHERE 1=1
+      	AND M.ID = C.ID
+      	AND M.ID = #{_parameter}
+   </select>
+   
+   <select id ="countGonggoInfo"  parameterType="String" resultType="int">
+      SELECT  count(*)
+		FROM J_JOB
+		WHERE 1=1 
+		  AND ID = #{_parameter}
+		  AND CLOSING = '0'
+		  AND STATE = '0'
+   </select>
+   
+   <select id ="countApplyInfo" parameterType="String" resultType="int">
+      SELECT  count(*)
+		FROM J_APPLY a, J_JOB j
+		WHERE 1=1 
+		AND a.READ = '0' 
+		AND a.CANCEL = '0'
+		AND a.JOB_NUMBER = j.JOB_NUMBER 
+		AND j.STATE = '0'
+		AND j.ID = #{_parameter}
+   </select>
+   
+   <select id ="countOfferInfo"  parameterType="String" resultType="int">
+      SELECT  count(*)
+		FROM J_OFFER o
+		WHERE 1=1
+		AND o.C_ID = #{_parameter}
+   </select>
+   
+   <update id="updateLogoPic">
+
+		UPDATE J_CORP_INFO c
+		SET c.MAINPIC=#{param2}
+		WHERE c.ID=#{param1}
+
+	</update>
+	
+	<select id ="selectCompanyQnaList"  parameterType="String" resultType="egovMap">
+     	SELECT  q.Q_NUMBER, q.TITLE, q.REPLY_DATE, q.STATE
+		FROM J_QNA q
+		WHERE 1=1 
+		AND q.ID = #{_parameter}
+		AND q.STATE = 'Y'
+   	</select>
+	
+	<select id ="selectCGpic"  parameterType="String" resultType="egovMap">
+     	 SELECT  p.PIC_ROUTE, p.CGPIC_ID
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.M_ID = #{param1}
+		AND p.PIC_DIV = #{param2}
+		ORDER BY p.CGPIC_ID ASC
+		
+   	</select>
+   	
+   	<select id ="selectPicIdList"  parameterType="Object" resultType="egovMap">
+      	SELECT  p.PIC_ROUTE, p.CGPIC_ID
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.M_ID = #{param1}
+		AND p.PIC_DIV = #{param2}
+		ORDER BY p.CGPIC_ID ASC
+   	</select>
+   	
+   	<select id ="selectGonggoPicIdList"  parameterType="String" resultType="egovMap">
+      	SELECT  p.CGPIC_ID
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.GONGGO_NUM = #{_parameter}
+		ORDER BY p.CGPIC_ID ASC
+   	</select>
+   	
+   	<!-- 메인 사진 리스트 가져오기 -->
+   	<select id ="selectPicList" resultType="egovMap">
+      	SELECT  p.PIC_ROUTE
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.M_ID = #{param1}
+		AND p.PIC_DIV = #{param2}
+		ORDER BY p.CGPIC_ID ASC
+   	</select>
+   	
+   	<!-- 공고번호로 회사내 사진가져오기 -->
+   	<select id ="selectGonggoPic" resultType="egovMap">
+      	SELECT  p.PIC_ROUTE,  p.CGPIC_ID
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.GONGGO_NUM = #{_parameter}
+		ORDER BY p.CGPIC_ID ASC
+   	</select>
+   	
+   	<!-- 사진 아이디들 가져오기  -->
+   	<select id ="selectPicCount"  parameterType="String" resultType="int">
+      	SELECT  p.CGPIC_ID
+		FROM J_CG_PIC p
+		WHERE 1=1 
+		AND p.M_ID = #{param1}
+		AND p.PIC_DIV = #{param2}
+   	</select>
+
+	<!-- 공간 만들면서 넣기 -->
+ 	<insert id="insertNewPic">
+
+		INSERT INTO J_CG_PIC
+			( CGPIC_ID
+			  , M_ID
+			  , PIC_ROUTE
+			  , PIC_DIV )
+		VALUES ( cg_pic_seq.NEXTVAL
+			  , #{param1}
+			  , #{param2}
+			  , #{param3} )
+	</insert>
+	
+	<!-- 기존 공고 공간 만들면서 넣기 -->
+ 	<insert id="insertNewGonggoPic">
+
+		INSERT INTO J_CG_PIC
+			( CGPIC_ID
+			  , M_ID
+			  , GONGGO_NUM
+			  , PIC_ROUTE
+			  , PIC_DIV )
+		VALUES ( cg_pic_seq.NEXTVAL
+			  , #{param1}
+			  , #{param2}
+			  , #{param3}
+			  , #{param4} )
+	</insert>
+	
+	<update id="updateNewPic">
+
+		UPDATE J_CG_PIC p
+		SET p.PIC_ROUTE = #{param2}
+		WHERE p.CGPIC_ID = #{param1}
+		AND p.PIC_DIV = #{param3}
+	</update>
+	
+	<update id="updateNewGongoPic">
+
+		UPDATE J_CG_PIC p
+		SET p.PIC_ROUTE = #{param2}
+		WHERE p.GONGGO_NUM = #{param1}
+		AND p.CGPIC_ID = #{param3}
+	</update>
+ 	
+</mapper>

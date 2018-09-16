@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <typeAliases>
+		<typeAlias alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+		<typeAlias alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+		<typeAlias alias="sampleVO" type="egovframework.example.sample.service.SampleVO"/>
+		<typeAlias alias="personVO" type="egovframework.example.person.main.service.PersonVO"/>
+		<typeAlias alias="pagingVO" type="egovframework.example.main.resumelist.service.PagingVO"/>
+		<typeAlias alias="personOfferPagingVO" type="egovframework.example.person.offer.service.PersonOfferPagingVO"/>
+		<typeAlias alias="personApplicationPagingVO" type="egovframework.example.person.application.service.PersonApplicationPagingVO"/>
+		<typeAlias alias="qnaPagingVO" type="egovframework.example.aboutjobq.qna.service.QnAPagingVO"/>
+		<typeAlias alias="storyPagingVO" type="egovframework.example.main.jobstory.service.StoryPagingVO"/>
+		<typeAlias alias="noticePagingVO" type="egovframework.example.aboutjobq.notice.service.NoticePagingVO"/>
+		<typeAlias alias="login" type="egovframework.example.admin.login.domain.LoginVO"/>
+		
+		<package name="egovframework.example.admin.sidebar.mainsetting.domain"/>
+		<package name="egovframework.example.admin.sidebar.member.domain"/>
+		<package name="egovframework.example.admin.cmmn.domain"/>
+		<package name="egovframework.example.admin.sidebar.board.domain" />
+		<package name="egovframework.example.admin.cmmn.board.domain"/>
+		<package name="egovframework.example.admin.sidebar.inquire.domain"/>
+		<package name="egovframework.example.admin.sidebar.resume.domain"/>
+		<package name="egovframework.example.admin.sidebar.applyandoffer.domain"/>
+		<package name="egovframework.example.admin.sidebar.employ.domain"/>
+		<package name="egovframework.example.admin.sidebar.employ.domain"/>
+		<package name="egovframework.example.admin.main.domain"/>
+    </typeAliases>
+</configuration>

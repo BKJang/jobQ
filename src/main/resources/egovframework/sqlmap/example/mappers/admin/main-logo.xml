@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.mainsetting.dao.MainLogoMapper">
+	<insert id="insertLogo" parameterType="string">
+		INSERT 
+			INTO j_logo (LOGO_PATH, MAIN_USE) 
+			VALUES(#{logoFullPath}, 'Y')
+	</insert>
+	
+	<select id="selectMainLogo" resultType="hashMap">
+		SELECT 
+			* 
+		FROM 
+			j_logo 
+		WHERE 
+			main_use = 'Y'
+	</select>
+	
+	<update id="updateMainLogo">
+		UPDATE 
+			j_logo 
+		SET 
+			main_use = 'N' 
+		WHERE 
+			main_use = 'Y'
+	</update>
+	
+	<select id="getLogoList" resultType="string">
+		SELECT logo_path FROM j_logo WHERE main_use = 'N' 
+	</select>
+	
+	<update id="updateLogo" parameterType="string" >
+		UPDATE j_logo SET main_use = 'Y' WHERE logo_path = #{logoPath} 
+	</update>
+	
+	<delete id="deleteLogo" parameterType="string">
+		DELETE FROM j_logo WHERE logo_path = #{logoPath}
+	</delete>
+</mapper>

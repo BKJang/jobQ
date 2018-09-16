@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+       "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+
+<tiles-definitions>
+	<definition name="layouts-tiles"
+		template="/WEB-INF/jsp/egovframework/example/cmmn/default-layouts.jsp">
+
+		<put-attribute name="head"
+			value="/WEB-INF/jsp/egovframework/example/cmmn/default-head.jsp" />
+		<put-attribute name="top"
+			value="/WEB-INF/jsp/egovframework/example/cmmn/default-top.jsp" />
+		<put-attribute name="nav"
+			value="/WEB-INF/jsp/egovframework/example/cmmn/default-nav.jsp" />
+
+		<put-attribute name="footer"
+			value="/WEB-INF/jsp/egovframework/example/cmmn/default-footer.jsp" />
+		<put-attribute name="footer_bottom"
+			value="/WEB-INF/jsp/egovframework/example/cmmn/default-footer_bottom.jsp" />
+		<put-attribute name="script"
+			value="/WEB-INF/jsp/egovframework/example/cmmn/default-script.jsp" />
+
+		<put-attribute name="content" value="" />
+
+	</definition>
+
+	<definition name="*/*/*.tiles" extends="layouts-tiles">
+		<put-attribute name="content"
+			value="/WEB-INF/jsp/egovframework/example/{1}/{2}/{3}.jsp" />
+	</definition>
+	
+	
+	<!--  메인과 동일하지 않은 레이아웃 (팝업 등) -->
+
+	<definition name="layouts-tiles2" template="/WEB-INF/jsp/egovframework/example/cmmn/default-layouts2.jsp">
+	  	<put-attribute name="head2"    	value="/WEB-INF/jsp/egovframework/example/cmmn/default-head2.jsp" />
+	  	<put-attribute name="script2"    	value="/WEB-INF/jsp/egovframework/example/cmmn/default-script2.jsp" />
+	  	<put-attribute name="content2"   	value="" />
+	</definition>
+	
+	<definition name="*/*/*.tiles2" extends="layouts-tiles2">
+	  	<put-attribute name="content2"   value="/WEB-INF/jsp/egovframework/example/{1}/{2}/{3}.jsp" />
+	</definition>
+	
+	<!--  공고 및 면접제의 기업 정보 쪽 팝업 -->
+
+	<definition name="layouts-tiles3" template="/WEB-INF/jsp/egovframework/example/cmmn/default-layouts3.jsp">
+	  	<put-attribute name="head3"    	value="/WEB-INF/jsp/egovframework/example/cmmn/default-head3.jsp" />
+	  	<put-attribute name="script3"    	value="/WEB-INF/jsp/egovframework/example/cmmn/default-script3.jsp" />
+	  	<put-attribute name="content3"   	value="" />
+	</definition>
+	
+	<definition name="*/*/*.tiles3" extends="layouts-tiles3">
+	  	<put-attribute name="content3"   value="/WEB-INF/jsp/egovframework/example/{1}/{2}/{3}.jsp" />
+	</definition>
+</tiles-definitions>

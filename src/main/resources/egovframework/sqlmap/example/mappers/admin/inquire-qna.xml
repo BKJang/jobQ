@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.inquire.mapper.AdminQnaMapper">
+	<resultMap type="boardPage" id="boardPage">
+		<result property="prev" column="prevNo" />
+		<result property="next" column="nextNo" />
+	</resultMap>
+	
+	<resultMap type="adminQnaVO" id="qna">
+		<id property="no" column="q_number" />
+		<result property="id" column="id"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="state" column="state" />
+		<result property="regDate" javaType="java.sql.Timestamp" column="date_regi"/>
+		<result property="updateDate" javaType="java.sql.Timestamp" column="date_modi"/>
+		
+		<result property="replyId" column="reply_id"/>
+		<result property="replyContent" column="reply_content"/>
+		<result property="replyRegDate" column="reply_date"/>
+		
+		<result property="boardPage.prev" column="prevNo"/>
+		<result property="boardPage.next" column="nextNo"/>
+	</resultMap> 
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.q_number, 
+			sup.id,
+			sup.title,
+			sup.re_state, 
+			sup.content,
+			sup.date_regi, 
+			sup.date_modi
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.q_number,
+					sub.id, 
+					sub.title, 
+					sub.re_state,
+					sub.content,
+					sub.date_regi, 
+					sub.date_modi
+				FROM (
+					    SELECT 
+					    	q_number, 
+					    	id,
+					    	title,
+					    	re_state, 
+					    	content,
+					    	date_regi, 
+					    	date_modi
+					    FROM 
+					    	j_qna
+					    WHERE 
+					    	state = 'Y'
+					    ORDER BY q_number DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	<select id="countAllList" resultType="int">
+		SELECT COUNT(*) FROM j_qna WHERE q_number > 0 AND state = 'Y'
+	</select>
+	
+	 <select id="getDetail" parameterType="int" resultMap="qna">
+		SELECT
+			q.q_number,
+		    q.id,
+		    q.title,
+		    q.content,
+		    q.date_regi,
+		    q.date_modi,
+		    q.reply_id,
+		    q.reply_content,
+		    q.reply_date,
+		    q.prevNo,
+		    q.nextNo
+		FROM(
+			SELECT 
+		         q_number,
+		         id,
+		         title,
+		         content,
+		         date_regi,
+		         date_modi,
+		         reply_id,
+			     reply_content,
+			     reply_date,
+		         LAG(q_number, 1, 0) OVER(ORDER BY q_number) prevNo, 
+		         LEAD(q_number, 1, 0) OVER (ORDER BY q_number) nextNo
+      		FROM j_qna 
+      		WHERE state = 'Y'
+      		) q
+  		WHERE
+    		q.q_number = #{no}
+	</select>
+	
+	<select id="getPrevAndNextPage" parameterType="list" resultMap="qna">
+		SELECT
+			q.q_number,
+			q.title
+		FROM
+			j_qna q
+		<trim prefix="WHERE">
+			q.q_number IN
+			<foreach item="no" collection="list" open="(" separator="," close=")">
+				#{no}
+			</foreach>
+		</trim>
+		AND q.state = 'Y'
+	</select>
+	
+	<update id="updateQnaReplyState" parameterType="int">
+		UPDATE 
+			j_qna
+		SET
+			re_state = '답변 완료'
+		WHERE
+			q_number = #{no} 
+	</update>
+	
+	<update id="insertQnaReply" parameterType="hashMap">
+		UPDATE j_qna
+		SET reply_id = #{id}, reply_content = #{content}, reply_date = SYSDATE
+		WHERE q_number = #{no}
+	</update>
+	
+	
+	<update id="delete" parameterType="list">
+		UPDATE j_qna
+		SET state = 'N' 
+		<trim prefix="WHERE" suffixOverrides="OR">
+			<foreach item="no" collection="list">
+				q_number = #{no} OR 
+			</foreach>
+		</trim>
+	</update>
+	
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			main.*
+		FROM (
+			SELECT 
+				rownum rnum, sub.*
+			FROM 
+				(
+					SELECT *
+					FROM 
+						j_qna
+					<trim prefix="WHERE" >
+						<choose>
+							<when test="coditionKey == 'id'">
+								id LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'title'">
+								title LIKE '%' || #{coditionValue} || '%'
+							</when>
+							<when test="coditionKey == 'content'">
+								content LIKE '%' || #{coditionValue} || '%'
+							</when>
+						</choose>
+					</trim>
+					AND state = 'Y'
+					ORDER BY q_number DESC
+				) sub
+			WHERE
+				rownum <![CDATA[<=]]> #{endPage} 
+		) main
+		WHERE
+		  rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM 
+			j_qna
+		<trim prefix="WHERE" >
+			<choose>
+				<when test="coditionKey == 'id'">
+					id LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'title'">
+					title LIKE '%' || #{coditionValue} || '%'
+				</when>
+				<when test="coditionKey == 'content'">
+					content LIKE '%' || #{coditionValue} || '%'
+				</when>
+			</choose>
+		</trim>
+		AND
+			state = 'Y'
+	</select>
+	
+	
+</mapper>

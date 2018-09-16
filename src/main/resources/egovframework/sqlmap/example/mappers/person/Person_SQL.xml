@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.person.main.service.impl.PersonMapper">
+	
+	<!-- 개인회원 메인페이지 정보 가져오기 -->
+	<select id ="selectPersonMainInfo" resultType="egovMap" parameterType="String">
+      SELECT  M.NAME name,
+      		M.PHONE phone,
+      		M.EMAIL email,
+      		M.HOMEPAGE homepage,
+      		R.TITLE,
+      		R.CONTENT content,
+      		M.SEX,
+      		TRUNC(MONTHS_BETWEEN(sysdate, BIRTH)/12)+1 birth,
+      		M.ID id,
+      		R.MAINPIC main_pic,
+      		R.RE_DELETE re_delete
+      FROM J_MEMBER M,
+      	   J_RESUME R
+      WHERE 1=1
+      	AND	M.ID = #{_parameter}
+      	AND M.ID = R.ID
+   </select>
+   
+   <select id="selectOfferCount" parameterType="String" resultType="egovMap">
+   		SELECT count(*) count_of_offer
+   		FROM
+   			J_OFFER O,
+   			J_RESUME R        
+   		WHERE
+   			R.ID = #{id}
+   		AND R.RE_NUMBER = O.RE_NUMBER	
+   </select>
+   
+   <select id="selectApplicationCount" parameterType="String" resultType="egovMap">
+		SELECT count(*) count_of_application
+		FROM 
+			J_APPLY A
+		WHERE  
+  		   A.P_ID = #{id}  
+  	  	   AND A.A_DELETE = 0
+   </select>
+   
+   
+   <update id="imageUpload">
+
+		UPDATE J_RESUME R
+		SET R.MAINPIC=#{param2}
+		WHERE R.ID=#{param1}
+
+	</update>
+	
+	<update id="deleteMainImage" parameterType="String">
+
+		UPDATE J_RESUME R
+		SET R.MAINPIC= ''
+		WHERE R.ID=#{id}
+
+	</update>
+	
+	
+	<select id="selectPersonQnA" parameterType="String" resultType="egovMap">
+		SELECT 
+			Q.Q_NUMBER q_number,
+			Q.TITLE q_title,
+			Q.CONTENT q_content,
+			Q.REPLY_DATE q_reply_date
+		FROM 
+			J_QNA Q
+		WHERE 1=1  
+  		   AND Q.ID = #{id}  
+  		   AND Q.STATE = 'Y'
+  		ORDER BY DATE_MODI ASC, 
+               REPLY_DATE ASC
+   </select>
+	
+</mapper>

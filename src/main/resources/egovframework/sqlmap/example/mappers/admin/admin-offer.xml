@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.sidebar.applyandoffer.dao.AdminOfferMapper">
+	
+	<select id="getList" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.offer_number, 
+	    	sup.company_name, 
+	    	sup.corp_member_id,
+	    	sup.content, 
+	    	sup.resume_title,
+	    	sup.member_id,
+	    	sup.offer_date 
+		FROM(
+				SELECT 
+					rownum as rnum, 
+					sub.offer_number, 
+			    	sub.company_name, 
+			    	sub.corp_member_id,
+			    	sub.content, 
+			    	sub.resume_title,
+			    	sub.member_id,
+			    	sub.offer_date
+				FROM (
+					    SELECT 
+						    jo.offer_id offer_number,
+						    jo.c_id corp_member_id,
+						    jo.o_date offer_date,
+						    jo.content,
+						    jr.title resume_title,
+						    jr.id member_id,
+						    jci.company company_name
+						FROM 
+							j_offer jo, 
+							j_corp_info jci, 
+							j_resume jr
+						WHERE 
+							jo.re_number = jr.re_number
+						AND 
+							jo.c_id = jci.id
+					    ORDER BY offer_id DESC
+					  ) sub
+				WHERE rownum <![CDATA[<=]]> #{endPage}
+			) sup
+		WHERE rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<!-- 이력서 전체 개수 -->
+	<select id="countAllList" resultType="int">
+		SELECT COUNT(*) FROM j_offer 
+	</select>
+	
+	
+	<select id="getDetail" parameterType="int" resultType="hashMap">
+		SELECT 
+		  jo.offer_id offer_number,
+		  jo.title offer_title,  
+		  jo.c_id corp_member_id,
+		  jo.content,
+		  jo.o_date offer_date,
+		  jci.company company_name,
+		  jr.title resume_title,
+		  jr.id member_id,
+		  jm.phone,
+		  jm.email
+		FROM 
+		  j_offer jo, 
+		  j_corp_info jci, 
+		  j_resume jr,
+		  j_member jm
+		WHERE 
+		  jo.re_number = jr.re_number
+		AND 
+		  jo.c_id = jci.id
+		AND
+		  jo.c_id = jm.id
+		AND
+		  jo.offer_id = #{no}
+	</select>
+	
+	
+	<select id="search" parameterType="hashMap" resultType="hashMap">
+		SELECT 
+			sup.offer_number, 
+	    	sup.company_name, 
+	    	sup.offer_title, 
+	    	sup.corp_member_id, 
+	    	sup.resume_title,
+	    	sup.member_id,
+	    	sup.offer_date 
+		FROM (
+			SELECT 
+				rownum as rnum, 
+				sub.offer_number, 
+		    	sub.company_name, 
+		    	sub.offer_title, 
+		    	sub.corp_member_id, 
+		    	sub.resume_title,
+		    	sub.member_id,
+		    	sub.offer_date
+			FROM 
+				(
+					SELECT 
+						jo.offer_id offer_number, 
+					    jo.title offer_title,  
+					    jo.c_id corp_member_id,
+					    jo.o_date offer_date,
+					    jr.title resume_title,
+					    jr.id member_id,
+					    jci.company company_name
+					FROM 
+						j_offer jo, 
+						j_corp_info jci, 
+						j_resume jr
+					WHERE		
+						jo.re_number = jr.re_number
+					AND 
+						jo.c_id = jci.id
+					AND
+					
+					<choose>
+						<when test="coditionKey == 'id'">
+							jo.c_id LIKE '%' || #{coditionValue} || '%'
+						</when>
+						
+						<when test="coditionKey == 'resumeTitle'">
+							jr.title LIKE '%' || #{coditionValue} || '%'
+						</when>
+						
+						<when test="coditionKey == 'offerTitle'">
+							jo.title LIKE '%' || #{coditionValue} || '%'
+						</when>
+						
+						<when test="coditionKey == 'offerContent'">
+							jo.content LIKE '%' || #{coditionValue} || '%'
+						</when>
+						
+						<when test="coditionKey == 'companyName'">
+							jci.company LIKE '%' || #{coditionValue} || '%'
+						</when>
+					</choose>
+					
+					ORDER BY jo.offer_id DESC
+				) sub
+			WHERE
+				rownum <![CDATA[<=]]> #{endPage} 
+		) sup
+		WHERE
+		  rnum <![CDATA[>=]]> #{startPage}
+	</select>
+	
+	
+	<select id="countSearchedData" parameterType="hashMap" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM 
+			j_offer jo, 
+			j_corp_info jci, 
+			j_resume jr
+		WHERE		
+			jo.re_number = jr.re_number
+		AND 
+			jo.c_id = jci.id
+		AND
+		
+		<choose>
+			<when test="coditionKey == 'id'">
+				jo.c_id LIKE '%' || #{coditionValue} || '%'
+			</when>
+			
+			<when test="coditionKey == 'resumeTitle'">
+				jr.title LIKE '%' || #{coditionValue} || '%'
+			</when>
+			
+			<when test="coditionKey == 'offerTitle'">
+				jo.title LIKE '%' || #{coditionValue} || '%'
+			</when>
+			
+			<when test="coditionKey == 'offerContent'">
+				jo.content LIKE '%' || #{coditionValue} || '%'
+			</when>
+			
+			<when test="coditionKey == 'companyName'">
+				jci.company LIKE '%' || #{coditionValue} || '%'
+			</when>
+		</choose>
+		
+	</select>
+	
+	
+</mapper>

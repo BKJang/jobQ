@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.company.job_manage.service.impl.CompanyJobmanageMapper">
+	
+	
+   	<insert id="insertGonngoData" parameterType="Map" >
+   	
+   		<selectKey keyProperty="jobNumberSeq" resultType="int" order="BEFORE">
+		   select gonggo_seq.nextval FROM DUAL
+		</selectKey>
+		INSERT ALL INTO J_JOB 
+			( ID
+			  , JOB_NUMBER
+			  , TITLE
+			  , NAME_WP
+			  , ADDRESS_WP_1
+			  , ADDRESS_WP_2
+			  , ADDRESS_WP_3
+			  , TYPE_EMPLOY
+			  , NUMBER_EMPLOY
+			  , CAREER
+			  , ACADEMIC 	
+			  , SALARY 
+			  , DATE_CLOSE
+			  , NAME_CM
+			  , PHONE_CM
+			  , EMAIL_CM
+			  , DATE_REGI
+			  , DATE_MODI
+			  , LAT
+			  , LNG
+			  , SKILL_LIST 
+			  , IMAGE_LOGO
+			  )
+			  
+		VALUES ( #{id}
+			  , #{jobNumberSeq}
+			  , #{title}
+			  , #{comName}
+			  , #{postNum}
+			  , #{full_address}
+			  , #{address3}
+			  , #{type_em}
+			  , #{usr}			  
+			  , #{careerCH}
+			  , #{academic}
+			  , #{number_em}
+			  , TO_DATE(#{dp},'YYYY/MM/DD')
+			  , #{cmName}
+			  , #{cmPhone}
+			  , #{cmEmail}
+			  , sysdate
+			  , sysdate
+			  , #{mapLat}
+			  , #{mapLng}
+			  , #{skillList} 
+			  , #{deaultLogo}
+			  )
+			  
+		INTO J_JOB_AREA	( JOB_NUMBER, AREA ) VALUES ( #{jobNumberSeq}, #{chooseAdd1}  )
+		INTO J_JOB_CONTENT 	( JOB_NUMBER, CONTENT  ) VALUES ( #{jobNumberSeq}, #{detailContents} )
+		<!-- INTO J_CG_PIC 	( CGPIC_ID, M_ID, PIC_DIV, GONGGO_NUM, PIC_ROUTE) VALUES ( cg_pic_seq.nextval, #{id}, 'g', #{jobNumberSeq}, #{submitPic_1} )
+		INTO J_CG_PIC 	( CGPIC_ID, M_ID, PIC_DIV, GONGGO_NUM, PIC_ROUTE) VALUES ( cg_pic_seq.nextval, #{id}, 'g', #{jobNumberSeq}, #{submitPic_2} )
+		INTO J_CG_PIC 	( CGPIC_ID, M_ID, PIC_DIV, GONGGO_NUM, PIC_ROUTE) VALUES ( cg_pic_seq.nextval, #{id}, 'g', #{jobNumberSeq}, #{submitPic_3} )
+		INTO J_CG_PIC 	( CGPIC_ID, M_ID, PIC_DIV, GONGGO_NUM, PIC_ROUTE) VALUES ( cg_pic_seq.nextval, #{id}, 'g', #{jobNumberSeq}, #{submitPic_4} )
+		INTO J_CG_PIC 	( CGPIC_ID, M_ID, PIC_DIV, GONGGO_NUM, PIC_ROUTE) VALUES ( cg_pic_seq.nextval, #{id}, 'g', #{jobNumberSeq}, #{submitPic_5} )
+		INTO J_CG_PIC 	( CGPIC_ID, M_ID, PIC_DIV, GONGGO_NUM, PIC_ROUTE) VALUES ( cg_pic_seq.nextval, #{id}, 'g', #{jobNumberSeq}, #{submitPic_6} ) -->
+		SELECT *
+		FROM DUAL
+	</insert>
+	
+	<insert id="insertComPic" >
+
+		INSERT INTO J_CG_PIC 
+			( CGPIC_ID
+				,M_ID
+				,PIC_DIV
+				,PIC_ROUTE
+				,GONGGO_NUM
+			  )
+			  
+		VALUES ( cg_pic_seq.NEXTVAL
+				,#{param2}
+				, 'g'
+				,#{param1}
+				,#{param3}
+			  )
+	</insert>
+	<!-- 진행중인 공고 수 -->
+  	<select id="ListCount" parameterType="map" resultType="int">
+      
+		SELECT  count(*)
+		FROM J_JOB j
+		WHERE 1=1 
+		AND ID = #{id}
+		<if test="FCGuBun == 1 or FCGuBun == 0">
+			AND	j.CLOSING = #{FCGuBun}
+		</if>
+		AND	j.STATE = '0'
+  	</select>
+  	
+  	<select id="selectClosingDate" parameterType="int" resultType="Date">
+      
+		SELECT  J.DATE_CLOSE
+		FROM J_JOB j
+		WHERE 1=1 
+		AND j.JOB_NUMBER = #{_parameter}
+  	</select>
+  	
+  	<!-- 최근 공고번호 가져오기 -->
+  	<select id="selectGonggoNum" resultType="String">
+      
+		SELECT MAX(j.JOB_NUMBER)
+		FROM J_JOB j
+		WHERE 1=1 
+		AND j.ID = #{_parameter}
+  	</select>
+	
+	<!-- 마감처리 -->
+	<update id="gonggoClosing" parameterType="Map">
+		
+		UPDATE J_JOB
+		SET CLOSING = #{closing}
+		WHERE JOB_NUMBER = #{gonggoNum}
+	</update>
+	
+  	<update id="updateGonngoData1" parameterType="Map">
+			UPDATE J_JOB j
+			SET 
+				j.TITLE = #{title}
+				, j.NAME_WP =#{comName}
+				, j.ADDRESS_WP_1 = #{postNum}
+				, j.ADDRESS_WP_2 = #{full_address}
+				, j.ADDRESS_WP_3 = #{address3}
+				, j.TYPE_EMPLOY = #{type_em}
+				, j.NUMBER_EMPLOY = #{usr}
+				, j.CAREER = #{careerCH}
+				, j.ACADEMIC = #{academic}
+				, j.SALARY = #{number_em}
+				, j.DATE_CLOSE = TO_DATE(#{dp},'YYYY/MM/DD')
+				, j.NAME_CM = #{cmName}
+				, j.PHONE_CM = #{cmPhone}
+				, j.EMAIL_CM = #{cmEmail}
+				, j.DATE_MODI = sysdate
+				, j.SKILL_LIST = #{skillList}
+				, j.IMAGE_LOGO = #{deaultLogo}
+				, j.LAT = #{mapLat}
+				, j.LNG = #{mapLng}
+				
+			WHERE 1=1 
+			AND j.ID=#{id}
+			AND j.JOB_NUMBER = #{jobNumber}
+	</update>
+	
+  	
+  	<update id="updateGonngoData2" parameterType="Map">
+	
+			UPDATE J_JOB_AREA a
+			SET 
+				a.AREA = #{chooseAdd1}
+			WHERE 1=1 
+			AND a.JOB_NUMBER = #{jobNumber}
+			
+	</update>
+	
+	<update id="updateGonngoData3" parameterType="Map">
+	
+			UPDATE J_JOB_CONTENT c
+			SET 
+				c.CONTENT = #{detailContents}
+			WHERE 1=1 
+			AND c.JOB_NUMBER = #{jobNumber}
+			
+		
+	</update>
+	<!-- 담당자 내역 변경  -->
+	<update id="changeMember" parameterType="Map">
+	
+			UPDATE J_MEMBER m
+			SET 
+				m.NAME = #{cmName}
+				, m.PHONE = #{cmPhone}
+				, m.EMAIL = #{cmEmail}
+			WHERE 1=1 
+			AND m.ID = #{id}
+	</update>
+	
+	<update id="deleteList" parameterType="String">
+	
+			UPDATE J_JOB j
+			SET j.STATE = '1',
+			j.CLOSING = '1'
+			WHERE 1=1 
+			AND j.JOB_NUMBER = #{_parameter}
+			
+		
+	</update>
+	
+	<select id="changePaging" parameterType="map" resultType="egovMap">
+      	<![CDATA[
+			SELECT  *
+			FROM (SELECT ROWNUM AS RNUM, a.*
+					FROM (SELECT j.JOB_NUMBER, j.NAME_WP, j.TITLE, j.DATE_REGI, j.DATE_CLOSE, j.HITS, j.CLOSING, a.AREA, ap.ALLCOUNT, ap.UNREADCOUNT
+					       FROM J_JOB j, J_JOB_AREA a, (
+					              select j.JOB_NUMBER, count(decode( ap.READ, '0', '1'))+count(decode( ap.READ, '1', '1')) allcount, count(decode( ap.READ, '0', '1')) unreadcount
+					              from J_JOB j LEFT OUTER JOIN J_APPLY ap
+					              ON j.JOB_NUMBER = ap.JOB_NUMBER AND ap.CANCEL = '0'
+					              where 1=1
+					              GROUP BY j.JOB_NUMBER
+					              ) ap
+						    WHERE 1=1 
+						    AND j.JOB_NUMBER = a.JOB_NUMBER
+						    AND j.JOB_NUMBER = ap.JOB_NUMBER
+						    AND j.ID = #{id}
+						    AND j.STATE = '0'
+						    ]]>
+						    <if test="fCGuBun != null and fCGuBun != '' and fCGuBun != '2'">
+						      AND	j.CLOSING = #{fCGuBun}
+						    </if>
+						    <![CDATA[ORDER BY j.JOB_NUMBER DESC
+				   		    ) a
+				WHERE 1=1)
+			WHERE 1=1
+			AND RNUM >= #{row} AND ROWNUM <= #{pageSize}
+		]]>	
+		
+  	</select>
+</mapper>
