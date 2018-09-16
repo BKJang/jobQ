@@ -21,7 +21,7 @@ jobQ는 구인을 하는 기업과 구직을 하는 개인을 이어주는 플�
 
 ## 환경
 
-- **Skills** : `Java`, `JavaScript`, `jQuery`,`TILES`, `AJAX`, `MAVEN`, `Mybatis`, `JSTL`, `JqGrid`, `Bootstrap`
+- **Skills** : `Java`, `JavaScript`, `jQuery`,`TILES`, `AJAX`, `MAVEN`, `Mybatis`, `JSTL`, `JqGrid`, `Bootstrap`, `Oracle`
 - **FrameWork** : 전자정부 프레임워크(Egov FrameWork) 3.5.1
 - **Server** : Tomcat 7.0
 - **Configuration Management** : SVN
